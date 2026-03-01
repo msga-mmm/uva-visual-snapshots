@@ -94,7 +94,7 @@ jobs:
           MODE: baseline
           STORYBOOK_DIR: baseline-src/test-storybook
           TOOL_DIR: report-src
-        run: bash scripts/ci-capture.sh
+        run: bash report-src/scripts/ci-capture.sh
 
       - name: Capture report snapshots from report branch and generate diff report
         shell: bash
@@ -102,7 +102,7 @@ jobs:
           MODE: report
           STORYBOOK_DIR: report-src/test-storybook
           TOOL_DIR: report-src
-        run: bash scripts/ci-capture.sh
+        run: bash report-src/scripts/ci-capture.sh
 
       - name: Build report summary
         id: summary
