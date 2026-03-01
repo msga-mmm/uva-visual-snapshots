@@ -55,7 +55,8 @@ const fmtPercent = (value) => {
 
 const normalizeSrc = (src) => {
   if (!src) return "";
-  return src.startsWith("/") ? src : "/" + src;
+  if (/^[a-z]+:\/\//i.test(src) || src.startsWith("data:")) return src;
+  return src.replace(/^\.\//, "");
 };
 
 const entryLabel = (entry) =>

@@ -5,6 +5,8 @@ import { ensureDir } from "./fs-utils.js";
 import type { CompareReportData, DiffStatus } from "./types.js";
 
 const REPORT_DATA_PLACEHOLDER = "__REPORT_DATA__";
+const STYLES_LINK_TAG = '<link rel="stylesheet" href="./styles.css" />';
+const APP_MODULE_TAG = '<script type="module" src="./app.js"></script>';
 
 function statusLabel(status: DiffStatus): string {
   switch (status) {
@@ -50,14 +52,31 @@ async function resolveAssetsDir(): Promise<string> {
   throw new Error("Report UI assets not found. Expected report-ui-assets next to runtime module.");
 }
 
-function renderIndexHtml(template: string, reportData: CompareReportData): string {
+function renderIndexHtml(
+  template: string,
+  reportData: CompareReportData,
+  stylesCss: string,
+  appJs: string,
+): string {
   const embedded = JSON.stringify(reportData).replace(/</g, "\\u003c");
+  const escapedAppJs = appJs.replace(/<\/script/gi, "<\\/script");
 
   if (!template.includes(REPORT_DATA_PLACEHOLDER)) {
     throw new Error(`Report template is missing placeholder: ${REPORT_DATA_PLACEHOLDER}`);
   }
 
-  return template.replace(REPORT_DATA_PLACEHOLDER, embedded);
+  if (!template.includes(STYLES_LINK_TAG)) {
+    throw new Error(`Report template is missing styles link tag: ${STYLES_LINK_TAG}`);
+  }
+
+  if (!template.includes(APP_MODULE_TAG)) {
+    throw new Error(`Report template is missing app script tag: ${APP_MODULE_TAG}`);
+  }
+
+  return template
+    .replace(STYLES_LINK_TAG, `<style>\n${stylesCss}\n</style>`)
+    .replace(REPORT_DATA_PLACEHOLDER, embedded)
+    .replace(APP_MODULE_TAG, `<script>\n${escapedAppJs}\n</script>`);
 }
 
 async function readAppJsOrTranspile(assetsDir: string): Promise<string> {
@@ -118,11 +137,10 @@ export async function writeReportHtml(
   const templatePath = path.join(assetsDir, "index.html");
   const template = await fs.readFile(templatePath, "utf8");
   const appJs = await readAppJsOrTranspile(assetsDir);
-  await fs.writeFile(path.join(reportDir, "app.js"), appJs, "utf8");
-  await fs.copyFile(path.join(assetsDir, "styles.css"), path.join(reportDir, "styles.css"));
+  const stylesCss = await fs.readFile(path.join(assetsDir, "styles.css"), "utf8");
 
   const htmlPath = path.join(reportDir, "index.html");
-  await fs.writeFile(htmlPath, renderIndexHtml(template, reportData), "utf8");
+  await fs.writeFile(htmlPath, renderIndexHtml(template, reportData, stylesCss, appJs), "utf8");
 }
 
 export { statusLabel };
