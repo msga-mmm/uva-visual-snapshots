@@ -36,7 +36,7 @@ type Story = StoryObj<CardArgs>;
 export const Default: Story = {
   args: {
     title: "Visual Snapshot Target",
-    body: "Use this story to verify your screenshot capture and diff behavior.",
+    body: "Use this story to verify your screenshot capture and diff behavior",
     highlighted: false,
   },
 };
@@ -44,7 +44,7 @@ export const Default: Story = {
 export const Highlighted: Story = {
   args: {
     title: "Highlighted Card",
-    body: "A second variation helps verify that multiple stories are captured.",
+    body: "A second variation helps verify that multiple stories are captured",
     highlighted: true,
   },
 };
