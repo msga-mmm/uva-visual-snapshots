@@ -21,7 +21,8 @@ jobs:
   visual-diff:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout workflow branch
@@ -144,6 +145,103 @@ jobs:
           path: ${{ runner.temp }}/report
           if-no-files-found: error
           retention-days: 14
+
+      - name: Prepare GitHub Pages content
+        id: pages
+        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASE_PATH="visual-diffs"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            REPORT_SUBPATH="${BASE_PATH}/pr-${{ github.event.pull_request.number }}/run-${{ github.run_id }}"
+          else
+            SAFE_REF="$(echo "${{ github.ref_name }}" | tr -cs '[:alnum:]._-' '-')"
+            REPORT_SUBPATH="${BASE_PATH}/manual/${SAFE_REF}/run-${{ github.run_id }}"
+          fi
+
+          PUBLISH_ROOT="${RUNNER_TEMP}/pages"
+          DEST_DIR="${PUBLISH_ROOT}/${REPORT_SUBPATH}"
+          mkdir -p "$DEST_DIR"
+          cp -R "${RUNNER_TEMP}/report/." "$DEST_DIR/"
+
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          if [[ "$REPO_NAME" == "${OWNER}.github.io" ]]; then
+            BASE_URL="https://${OWNER}.github.io"
+          else
+            BASE_URL="https://${OWNER}.github.io/${REPO_NAME}"
+          fi
+          REPORT_URL="${BASE_URL}/${REPORT_SUBPATH}/index.html"
+
+          echo "report_subpath=${REPORT_SUBPATH}" >> "$GITHUB_OUTPUT"
+          echo "report_url=${REPORT_URL}" >> "$GITHUB_OUTPUT"
+
+          {
+            echo ""
+            echo "## Visual Diff Report"
+            echo ""
+            echo "- Live report: ${REPORT_URL}"
+            echo "- Published path: \`${REPORT_SUBPATH}\`"
+            echo ""
+            echo "> GitHub Pages publish can take up to a minute after deploy."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy report to GitHub Pages (gh-pages)
+        if: ${{ steps.pages.outputs.report_subpath != '' }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ${{ runner.temp }}/pages
+          keep_files: true
+          enable_jekyll: false
+
+      - name: Comment live report URL on pull request
+        if: ${{ github.event_name == 'pull_request' && steps.pages.outputs.report_url != '' }}
+        uses: actions/github-script@v7
+        env:
+          REPORT_URL: ${{ steps.pages.outputs.report_url }}
+          REPORT_SUBPATH: ${{ steps.pages.outputs.report_subpath }}
+        with:
+          script: |
+            const marker = "<!-- visual-diff-report-link -->";
+            const body = [
+              marker,
+              "## Visual Diff Report",
+              "",
+              `- Live report: ${process.env.REPORT_URL}`,
+              `- Published path: \`${process.env.REPORT_SUBPATH}\``,
+              "",
+              "_GitHub Pages publish may take up to a minute after the workflow finishes._",
+            ].join("\n");
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find((comment) => comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
 
       - name: Fail when changes detected
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.fail_on_changes && steps.summary.outputs.changed != '0' }}
