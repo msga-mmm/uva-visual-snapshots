@@ -40,7 +40,7 @@ interface ReportCliOptions {
   diffRatioThreshold: string;
   pixelThreshold: string;
   port: string;
-  noServe?: boolean;
+  serve: boolean;
 }
 
 async function main(): Promise<void> {
@@ -106,7 +106,7 @@ async function main(): Promise<void> {
     .option("--diff-ratio-threshold <number>", "Minimum mismatch ratio to flag as changed", "0")
     .option("--pixel-threshold <number>", "Pixelmatch sensitivity threshold", "0.1")
     .option("--port <port>", "Port to serve on", "4400")
-    .option("--no-serve", "Generate report without starting the local server", false)
+    .option("--no-serve", "Generate report without starting the local server")
     .action(async (options: ReportCliOptions) => {
       const currentDir = path.resolve(options.current);
       const baselineDir = path.resolve(options.baseline);
@@ -140,7 +140,7 @@ async function main(): Promise<void> {
       console.log(`[report] Unchanged: ${report.summary.unchanged}`);
       console.log(`[report] Generated: ${reportDir}/index.html`);
 
-      if (!options.noServe) {
+      if (options.serve) {
         await serveReport({
           reportDir,
           port: toNumber(options.port, "port"),
