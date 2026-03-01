@@ -38,7 +38,7 @@ export const Secondary: Story = {
 
 export const Disabled: Story = {
   args: {
-    label: "Disabled Button",
+    label: "Disabed Button",
     variant: "primary",
     disabled: true,
   },
