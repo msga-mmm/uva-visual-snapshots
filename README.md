@@ -75,7 +75,7 @@ Use `--no-serve` when running in CI to generate report files without starting th
 - `.uva-visual-snapshots/current/*.png`: current run snapshots
 - `.uva-visual-snapshots/current/manifest.json`: story metadata from last capture
 - `.uva-visual-snapshots/baseline/*.png`: baseline snapshots
-- `.uva-visual-snapshots/report/index.html`: React visual diff UI
+- `.uva-visual-snapshots/report/index.html`: self-contained React visual diff UI (inline JS/CSS)
 - `.uva-visual-snapshots/report/report.json`: summary + all entries
 
 ## Notes
