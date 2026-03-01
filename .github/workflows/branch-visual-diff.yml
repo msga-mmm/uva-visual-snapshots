@@ -1,0 +1,149 @@
+name: Branch Visual Diff
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      baseline_branch:
+        description: Branch to use as baseline snapshots source.
+        required: false
+        default: main
+      report_branch:
+        description: Branch to use for report/diff snapshots source.
+        required: false
+      fail_on_changes:
+        description: Fail workflow when changed snapshots are detected.
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  visual-diff:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Resolve baseline/report refs
+        id: refs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASELINE_REF="${{ github.base_ref }}"
+            REPORT_REF="${{ github.head_ref }}"
+          else
+            BASELINE_REF="${{ inputs.baseline_branch }}"
+            REPORT_REF="${{ inputs.report_branch }}"
+
+            if [[ -z "$BASELINE_REF" ]]; then
+              BASELINE_REF="main"
+            fi
+
+            if [[ -z "$REPORT_REF" ]]; then
+              REPORT_REF="${{ github.ref_name }}"
+            fi
+          fi
+
+          echo "baseline_ref=$BASELINE_REF" >> "$GITHUB_OUTPUT"
+          echo "report_ref=$REPORT_REF" >> "$GITHUB_OUTPUT"
+          echo "Using baseline=$BASELINE_REF report=$REPORT_REF"
+
+      - name: Checkout report branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.refs.outputs.report_ref }}
+          path: report-src
+
+      - name: Checkout baseline branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.refs.outputs.baseline_ref }}
+          path: baseline-src
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: |
+            report-src/package-lock.json
+            report-src/test-storybook/package-lock.json
+            baseline-src/test-storybook/package-lock.json
+
+      - name: Install report branch dependencies
+        working-directory: report-src
+        run: npm ci
+
+      - name: Install Playwright browser
+        working-directory: report-src
+        run: npx playwright install --with-deps chromium
+
+      - name: Install report branch test Storybook dependencies
+        working-directory: report-src/test-storybook
+        run: npm ci
+
+      - name: Install baseline branch test Storybook dependencies
+        working-directory: baseline-src/test-storybook
+        run: npm ci
+
+      - name: Capture baseline snapshots from baseline branch
+        shell: bash
+        env:
+          MODE: baseline
+          STORYBOOK_DIR: baseline-src/test-storybook
+          TOOL_DIR: report-src
+        run: bash scripts/ci-capture.sh
+
+      - name: Capture report snapshots from report branch and generate diff report
+        shell: bash
+        env:
+          MODE: report
+          STORYBOOK_DIR: report-src/test-storybook
+          TOOL_DIR: report-src
+        run: bash scripts/ci-capture.sh
+
+      - name: Build report summary
+        id: summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require("node:fs");
+          const report = JSON.parse(fs.readFileSync(`${process.env.RUNNER_TEMP}/report/report.json`, "utf8"));
+          const summary = report.summary ?? {};
+          const changed = Number(summary.changed ?? 0);
+          const output = process.env.GITHUB_OUTPUT;
+          const stepSummary = process.env.GITHUB_STEP_SUMMARY;
+          fs.appendFileSync(output, `changed=${changed}\n`);
+          fs.appendFileSync(stepSummary, [
+            "## Visual Diff Summary",
+            "",
+            `- Baseline branch: \`${process.env.BASELINE_REF}\``,
+            `- Report branch: \`${process.env.REPORT_REF}\``,
+            `- Total snapshots: \`${summary.total ?? 0}\``,
+            `- Changed: \`${summary.changed ?? 0}\``,
+            `- Unchanged: \`${summary.unchanged ?? 0}\``,
+            `- Missing baseline: \`${summary.missingBaseline ?? 0}\``,
+            `- Missing current: \`${summary.missingCurrent ?? 0}\``,
+            `- Dimension mismatch: \`${summary.dimensionMismatch ?? 0}\``,
+          ].join("\n") + "\n");
+          NODE
+        env:
+          BASELINE_REF: ${{ steps.refs.outputs.baseline_ref }}
+          REPORT_REF: ${{ steps.refs.outputs.report_ref }}
+
+      - name: Upload visual diff report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diff-report
+          path: ${{ runner.temp }}/report
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Fail when changes detected
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.fail_on_changes && steps.summary.outputs.changed != '0' }}
+        run: |
+          echo "Snapshot changes detected: ${{ steps.summary.outputs.changed }}"
+          exit 1

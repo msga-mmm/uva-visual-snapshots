@@ -1,0 +1,58 @@
+{
+  "name": "uva-visual-snapshots",
+  "version": "0.1.0",
+  "description": "npm package for Storybook visual snapshots, baseline comparison, and a simple diff UI.",
+  "type": "module",
+  "bin": {
+    "uva-visual-snapshots": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && npm run build:assets",
+    "dev": "tsx src/cli.ts",
+    "dev:report-ui": "tsx src/dev-report-ui.ts",
+    "clean": "rimraf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "baseline": "tsx src/cli.ts baseline",
+    "report": "tsx src/cli.ts report",
+    "build:assets": "mkdir -p dist/report-ui-assets && cp -R src/report-ui-assets/. dist/report-ui-assets/ && node scripts/build-report-ui-assets.mjs --input src/report-ui-assets/app.tsx --output dist/report-ui-assets/app.js"
+  },
+  "keywords": [
+    "storybook",
+    "playwright",
+    "visual-regression",
+    "snapshot"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.1.0",
+    "express": "^4.21.2",
+    "pixelmatch": "^6.0.0",
+    "playwright": "^1.52.0",
+    "pngjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "@types/pixelmatch": "^5.2.6",
+    "@types/pngjs": "^6.0.5",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.2",
+    "typescript-eslint": "^8.26.1",
+    "typescript": "^5.8.2"
+  }
+}

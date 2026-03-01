@@ -1,0 +1,4 @@
+node_modules/
+dist/
+.uva-visual-snapshots/
+playwright-report/
