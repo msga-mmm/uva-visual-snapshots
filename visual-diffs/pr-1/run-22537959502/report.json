@@ -1,0 +1,85 @@
+{
+  "generatedAt": "2026-03-01T06:48:59.454Z",
+  "baselineDir": "/home/runner/work/_temp/baseline",
+  "currentDir": "/home/runner/work/_temp/current-report",
+  "diffRatioThreshold": 0,
+  "pixelThreshold": 0.1,
+  "summary": {
+    "total": 5,
+    "changed": 4,
+    "unchanged": 1,
+    "missingBaseline": 0,
+    "missingCurrent": 0,
+    "dimensionMismatch": 1,
+    "errors": 0
+  },
+  "entries": [
+    {
+      "key": "components-button--disabled.png",
+      "storyId": "components-button--disabled",
+      "title": "Components/Button",
+      "name": "Disabled",
+      "status": "dimension_mismatch",
+      "baselineImage": "assets/baseline/components-button--disabled.png",
+      "currentImage": "assets/current/components-button--disabled.png",
+      "width": 168,
+      "height": 74,
+      "notes": "Baseline 172x74 vs current 168x74"
+    },
+    {
+      "key": "components-button--primary.png",
+      "storyId": "components-button--primary",
+      "title": "Components/Button",
+      "name": "Primary",
+      "status": "changed",
+      "baselineImage": "assets/baseline/components-button--primary.png",
+      "currentImage": "assets/current/components-button--primary.png",
+      "diffImage": "assets/diff/components-button--primary.png",
+      "mismatchPixels": 4963,
+      "mismatchRatio": 0.40402149137088894,
+      "width": 166,
+      "height": 74
+    },
+    {
+      "key": "components-button--secondary.png",
+      "storyId": "components-button--secondary",
+      "title": "Components/Button",
+      "name": "Secondary",
+      "status": "unchanged",
+      "baselineImage": "assets/baseline/components-button--secondary.png",
+      "currentImage": "assets/current/components-button--secondary.png",
+      "width": 186,
+      "height": 74,
+      "mismatchPixels": 0,
+      "mismatchRatio": 0
+    },
+    {
+      "key": "components-card--default.png",
+      "storyId": "components-card--default",
+      "title": "Components/Card",
+      "name": "Default",
+      "status": "changed",
+      "baselineImage": "assets/baseline/components-card--default.png",
+      "currentImage": "assets/current/components-card--default.png",
+      "diffImage": "assets/diff/components-card--default.png",
+      "mismatchPixels": 1,
+      "mismatchRatio": 0.00001653111155194075,
+      "width": 426,
+      "height": 142
+    },
+    {
+      "key": "components-card--highlighted.png",
+      "storyId": "components-card--highlighted",
+      "title": "Components/Card",
+      "name": "Highlighted",
+      "status": "changed",
+      "baselineImage": "assets/baseline/components-card--highlighted.png",
+      "currentImage": "assets/current/components-card--highlighted.png",
+      "diffImage": "assets/diff/components-card--highlighted.png",
+      "mismatchPixels": 1,
+      "mismatchRatio": 0.00001653111155194075,
+      "width": 426,
+      "height": 142
+    }
+  ]
+}
