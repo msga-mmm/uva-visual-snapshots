@@ -4,7 +4,8 @@ set -euo pipefail
 MODE="${MODE:-}"
 STORYBOOK_DIR="${STORYBOOK_DIR:-}"
 TOOL_DIR="${TOOL_DIR:-}"
-STORYBOOK_URL="${STORYBOOK_URL:-http://127.0.0.1:6006}"
+STORYBOOK_PORT="${STORYBOOK_PORT:-}"
+STORYBOOK_URL="${STORYBOOK_URL:-}"
 WAIT_ATTEMPTS="${WAIT_ATTEMPTS:-90}"
 WAIT_SLEEP_SECONDS="${WAIT_SLEEP_SECONDS:-2}"
 REPORT_TIMEOUT_SECONDS="${REPORT_TIMEOUT_SECONDS:-180}"
@@ -17,9 +18,11 @@ fi
 case "$MODE" in
   baseline)
     LOG_PATH="$RUNNER_TEMP/storybook-baseline.log"
+    DEFAULT_PORT="6006"
     ;;
   report)
     LOG_PATH="$RUNNER_TEMP/storybook-report.log"
+    DEFAULT_PORT="6007"
     ;;
   *)
     echo "Invalid MODE: $MODE (expected baseline|report)"
@@ -27,12 +30,26 @@ case "$MODE" in
     ;;
 esac
 
+if [[ -z "$STORYBOOK_PORT" ]]; then
+  STORYBOOK_PORT="$DEFAULT_PORT"
+fi
+
+if [[ -z "$STORYBOOK_URL" ]]; then
+  STORYBOOK_URL="http://127.0.0.1:${STORYBOOK_PORT}"
+fi
+
 (
   cd "$STORYBOOK_DIR"
-  npm run storybook > "$LOG_PATH" 2>&1
+  npm run storybook -- --host 127.0.0.1 --port "$STORYBOOK_PORT" > "$LOG_PATH" 2>&1
 ) &
 STORYBOOK_PID=$!
-trap 'kill "$STORYBOOK_PID" || true' EXIT
+
+cleanup_storybook() {
+  kill "$STORYBOOK_PID" 2>/dev/null || true
+  wait "$STORYBOOK_PID" 2>/dev/null || true
+}
+
+trap cleanup_storybook EXIT
 
 for _ in $(seq 1 "$WAIT_ATTEMPTS"); do
   if curl -fsS "$STORYBOOK_URL" >/dev/null; then
@@ -93,5 +110,5 @@ else
   fi
 fi
 
-kill "$STORYBOOK_PID" || true
+cleanup_storybook
 trap - EXIT
