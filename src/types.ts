@@ -28,6 +28,7 @@ export interface CaptureOptions {
   height: number;
   headless: boolean;
   fullPage: boolean;
+  freezeAnimations?: boolean;
   targetSelector: string;
   storyIds?: string[];
 }
