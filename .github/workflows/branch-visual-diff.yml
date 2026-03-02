@@ -20,6 +20,10 @@ on:
 jobs:
   visual-diff:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     permissions:
       contents: write
       pull-requests: write
@@ -80,9 +84,9 @@ jobs:
         working-directory: report-src
         run: npm ci
 
-      - name: Install Playwright browser
+      - name: Install Playwright browser (${{ matrix.browser }})
         working-directory: report-src
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Install report branch test Storybook dependencies
         working-directory: report-src/test-storybook
@@ -98,6 +102,7 @@ jobs:
           MODE: baseline
           STORYBOOK_DIR: baseline-src/test-storybook
           TOOL_DIR: report-src
+          BROWSER: ${{ matrix.browser }}
         run: bash scripts/ci-capture.sh
 
       - name: Capture report snapshots from report branch and generate diff report
@@ -106,6 +111,7 @@ jobs:
           MODE: report
           STORYBOOK_DIR: report-src/test-storybook
           TOOL_DIR: report-src
+          BROWSER: ${{ matrix.browser }}
         run: bash scripts/ci-capture.sh
 
       - name: Build report summary
@@ -124,6 +130,7 @@ jobs:
           fs.appendFileSync(stepSummary, [
             "## Visual Diff Summary",
             "",
+            `- Browser: \`${process.env.BROWSER}\``,
             `- Baseline branch: \`${process.env.BASELINE_REF}\``,
             `- Report branch: \`${process.env.REPORT_REF}\``,
             `- Total snapshots: \`${summary.total ?? 0}\``,
@@ -137,11 +144,12 @@ jobs:
         env:
           BASELINE_REF: ${{ steps.refs.outputs.baseline_ref }}
           REPORT_REF: ${{ steps.refs.outputs.report_ref }}
+          BROWSER: ${{ matrix.browser }}
 
       - name: Upload visual diff report artifact
         uses: actions/upload-artifact@v4
         with:
-          name: visual-diff-report
+          name: visual-diff-report-${{ matrix.browser }}
           path: ${{ runner.temp }}/report
           if-no-files-found: error
           retention-days: 14
@@ -155,10 +163,10 @@ jobs:
 
           BASE_PATH="visual-diffs"
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            REPORT_SUBPATH="${BASE_PATH}/pr-${{ github.event.pull_request.number }}/run-${{ github.run_id }}"
+            REPORT_SUBPATH="${BASE_PATH}/pr-${{ github.event.pull_request.number }}/run-${{ github.run_id }}/${{ matrix.browser }}"
           else
             SAFE_REF="$(echo "${{ github.ref_name }}" | tr -cs '[:alnum:]._-' '-')"
-            REPORT_SUBPATH="${BASE_PATH}/manual/${SAFE_REF}/run-${{ github.run_id }}"
+            REPORT_SUBPATH="${BASE_PATH}/manual/${SAFE_REF}/run-${{ github.run_id }}/${{ matrix.browser }}"
           fi
 
           PUBLISH_ROOT="${RUNNER_TEMP}/pages"
@@ -182,6 +190,7 @@ jobs:
             echo ""
             echo "## Visual Diff Report"
             echo ""
+            echo "- Browser: \`${{ matrix.browser }}\`"
             echo "- Live report: ${REPORT_URL}"
             echo "- Published path: \`${REPORT_SUBPATH}\`"
             echo ""
@@ -204,13 +213,15 @@ jobs:
         env:
           REPORT_URL: ${{ steps.pages.outputs.report_url }}
           REPORT_SUBPATH: ${{ steps.pages.outputs.report_subpath }}
+          BROWSER: ${{ matrix.browser }}
         with:
           script: |
-            const marker = "<!-- visual-diff-report-link -->";
+            const marker = `<!-- visual-diff-report-link:${process.env.BROWSER} -->`;
             const body = [
               marker,
               "## Visual Diff Report",
               "",
+              `- Browser: \`${process.env.BROWSER}\``,
               `- Live report: ${process.env.REPORT_URL}`,
               `- Published path: \`${process.env.REPORT_SUBPATH}\``,
               "",
