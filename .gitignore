@@ -2,3 +2,4 @@ node_modules/
 dist/
 .uva-visual-snapshots/
 playwright-report/
+test-storybook/storybook-static/
