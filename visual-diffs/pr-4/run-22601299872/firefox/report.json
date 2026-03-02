@@ -1,0 +1,109 @@
+{
+  "generatedAt": "2026-03-02T23:53:58.925Z",
+  "baselineDir": "/home/runner/work/_temp/baseline",
+  "currentDir": "/home/runner/work/_temp/current-report",
+  "diffRatioThreshold": 0,
+  "pixelThreshold": 0.1,
+  "summary": {
+    "total": 7,
+    "changed": 0,
+    "unchanged": 7,
+    "missingBaseline": 0,
+    "missingCurrent": 0,
+    "dimensionMismatch": 0,
+    "errors": 0
+  },
+  "entries": [
+    {
+      "key": "components-button--disabled.png",
+      "storyId": "components-button--disabled",
+      "title": "Components/Button",
+      "name": "Disabled",
+      "status": "unchanged",
+      "baselineImage": "assets/baseline/components-button--disabled.png",
+      "currentImage": "assets/current/components-button--disabled.png",
+      "width": 186,
+      "height": 76,
+      "mismatchPixels": 0,
+      "mismatchRatio": 0
+    },
+    {
+      "key": "components-button--primary.png",
+      "storyId": "components-button--primary",
+      "title": "Components/Button",
+      "name": "Primary",
+      "status": "unchanged",
+      "baselineImage": "assets/baseline/components-button--primary.png",
+      "currentImage": "assets/current/components-button--primary.png",
+      "width": 180,
+      "height": 76,
+      "mismatchPixels": 0,
+      "mismatchRatio": 0
+    },
+    {
+      "key": "components-button--secondary.png",
+      "storyId": "components-button--secondary",
+      "title": "Components/Button",
+      "name": "Secondary",
+      "status": "unchanged",
+      "baselineImage": "assets/baseline/components-button--secondary.png",
+      "currentImage": "assets/current/components-button--secondary.png",
+      "width": 200,
+      "height": 76,
+      "mismatchPixels": 0,
+      "mismatchRatio": 0
+    },
+    {
+      "key": "components-card--default.png",
+      "storyId": "components-card--default",
+      "title": "Components/Card",
+      "name": "Default",
+      "status": "unchanged",
+      "baselineImage": "assets/baseline/components-card--default.png",
+      "currentImage": "assets/current/components-card--default.png",
+      "width": 426,
+      "height": 142,
+      "mismatchPixels": 0,
+      "mismatchRatio": 0
+    },
+    {
+      "key": "components-card--highlighted.png",
+      "storyId": "components-card--highlighted",
+      "title": "Components/Card",
+      "name": "Highlighted",
+      "status": "unchanged",
+      "baselineImage": "assets/baseline/components-card--highlighted.png",
+      "currentImage": "assets/current/components-card--highlighted.png",
+      "width": 426,
+      "height": 142,
+      "mismatchPixels": 0,
+      "mismatchRatio": 0
+    },
+    {
+      "key": "components-spinner--loading.png",
+      "storyId": "components-spinner--loading",
+      "title": "Components/Spinner",
+      "name": "Loading",
+      "status": "unchanged",
+      "baselineImage": "assets/baseline/components-spinner--loading.png",
+      "currentImage": "assets/current/components-spinner--loading.png",
+      "width": 188,
+      "height": 66,
+      "mismatchPixels": 0,
+      "mismatchRatio": 0
+    },
+    {
+      "key": "layout-long-content--scrollable.png",
+      "storyId": "layout-long-content--scrollable",
+      "title": "Layout/Long Content",
+      "name": "Scrollable",
+      "status": "unchanged",
+      "baselineImage": "assets/baseline/layout-long-content--scrollable.png",
+      "currentImage": "assets/current/layout-long-content--scrollable.png",
+      "width": 486,
+      "height": 326,
+      "mismatchPixels": 0,
+      "mismatchRatio": 0
+    }
+  ]
+}
