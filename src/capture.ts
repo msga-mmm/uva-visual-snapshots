@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { chromium } from "playwright";
+import { chromium, firefox, webkit } from "playwright";
 import { ensureDir, sanitizeFilename } from "./fs-utils.js";
 import type { CaptureOptions, SnapshotManifest, SnapshotRecord, StoryEntry } from "./types.js";
 
@@ -110,7 +110,8 @@ export async function captureSnapshots(options: CaptureOptions): Promise<Snapsho
   await fs.rm(options.outputDir, { recursive: true, force: true });
   await ensureDir(options.outputDir);
 
-  const browser = await chromium.launch({ headless: options.headless });
+  const browserTypeMap = { chromium, firefox, webkit };
+  const browser = await browserTypeMap[options.browser].launch({ headless: options.headless });
   const context = await browser.newContext({
     viewport: {
       width: options.width,

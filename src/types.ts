@@ -23,6 +23,7 @@ export interface SnapshotManifest {
 export interface CaptureOptions {
   storybookUrl: string;
   outputDir: string;
+  browser: "chromium" | "firefox" | "webkit";
   width: number;
   height: number;
   headless: boolean;
