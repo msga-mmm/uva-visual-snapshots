@@ -72,6 +72,8 @@ uva-visual-snapshots report \
 
 `--browser` supports `chromium` (default), `firefox`, and `webkit` (Safari engine).
 
+Captures freeze motion by default (`reducedMotion: reduce` plus Playwright screenshot animation disabling) to keep animated stories deterministic in CI. Use `--no-freeze-animations` only when you explicitly need live animation frames.
+
 Use `--no-serve` when running in CI to generate report files without starting the report web server.
 
 ## Generated output

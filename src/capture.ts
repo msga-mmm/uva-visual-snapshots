@@ -15,6 +15,41 @@ interface StorybookIndex {
   entries?: Record<string, StorybookIndexEntry>;
 }
 
+function getScreenshotStabilityOptions(freezeAnimations: boolean): {
+  animations?: "disabled";
+  caret?: "hide";
+} {
+  if (!freezeAnimations) {
+    return {};
+  }
+
+  return {
+    animations: "disabled",
+    caret: "hide",
+  };
+}
+
+async function waitForStableRender(page: import("playwright").Page): Promise<void> {
+  await page
+    .waitForFunction(
+      () => {
+        if (!("fonts" in document)) {
+          return true;
+        }
+
+        return document.fonts.status === "loaded";
+      },
+      undefined,
+      { timeout: 10_000 },
+    )
+    .catch(() => undefined);
+
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  });
+}
+
 function buildStorybookUrl(baseUrl: string, relativePath: string): string {
   const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
   return new URL(relativePath, normalizedBase).toString();
@@ -49,6 +84,7 @@ async function captureOneStory(
   storybookUrl: string,
   targetSelector: string,
   fullPage: boolean,
+  freezeAnimations: boolean,
   story: StoryEntry,
   page: import("playwright").Page,
 ): Promise<SnapshotRecord> {
@@ -61,13 +97,15 @@ async function captureOneStory(
 
   try {
     await page.goto(storyUrl, { waitUntil: "networkidle", timeout: 30_000 });
-    await page.waitForTimeout(250);
+    await waitForStableRender(page);
+
+    const screenshotStabilityOptions = getScreenshotStabilityOptions(freezeAnimations);
 
     const root = page.locator(targetSelector).first();
     if (!fullPage && (await root.count()) > 0) {
-      await root.screenshot({ path: outputPath });
+      await root.screenshot({ path: outputPath, ...screenshotStabilityOptions });
     } else {
-      await page.screenshot({ path: outputPath, fullPage });
+      await page.screenshot({ path: outputPath, fullPage, ...screenshotStabilityOptions });
     }
 
     return {
@@ -87,6 +125,7 @@ async function captureOneStory(
 }
 
 export async function captureSnapshots(options: CaptureOptions): Promise<SnapshotManifest> {
+  const freezeAnimations = options.freezeAnimations ?? true;
   const storiesFromIndex = await fetchStories(options.storybookUrl);
   const requestedStoryIds = new Set(options.storyIds ?? []);
   const selectedStories =
@@ -118,6 +157,7 @@ export async function captureSnapshots(options: CaptureOptions): Promise<Snapsho
       height: options.height,
     },
     deviceScaleFactor: 1,
+    reducedMotion: freezeAnimations ? "reduce" : "no-preference",
   });
   const page = await context.newPage();
 
@@ -129,6 +169,7 @@ export async function captureSnapshots(options: CaptureOptions): Promise<Snapsho
         options.storybookUrl,
         options.targetSelector,
         options.fullPage,
+        freezeAnimations,
         story,
         page,
       );

@@ -32,6 +32,7 @@ interface BaselineCliOptions {
   targetSelector: string;
   story?: string[];
   fullPage?: boolean;
+  freezeAnimations: boolean;
   headed?: boolean;
 }
 
@@ -46,6 +47,7 @@ interface ReportCliOptions {
   targetSelector: string;
   story?: string[];
   fullPage?: boolean;
+  freezeAnimations: boolean;
   headed?: boolean;
   diffRatioThreshold: string;
   pixelThreshold: string;
@@ -79,6 +81,10 @@ async function main(): Promise<void> {
     .option("--target-selector <selector>", "Root selector to screenshot", "#storybook-root, #root")
     .option("--story <id...>", "Specific Storybook story IDs to capture")
     .option("--full-page", "Capture full page screenshot", false)
+    .option(
+      "--no-freeze-animations",
+      "Allow CSS animations/transitions during capture (default freezes motion for stable diffs)",
+    )
     .option("--headed", "Run browser in headed mode", false)
     .action(async (options: BaselineCliOptions) => {
       const currentDir = path.resolve(options.current);
@@ -92,6 +98,7 @@ async function main(): Promise<void> {
         height: toNumber(options.height, "height"),
         headless: !options.headed,
         fullPage: Boolean(options.fullPage),
+        freezeAnimations: options.freezeAnimations,
         targetSelector: options.targetSelector,
         storyIds: options.story,
       });
@@ -123,6 +130,10 @@ async function main(): Promise<void> {
     .option("--target-selector <selector>", "Root selector to screenshot", "#storybook-root, #root")
     .option("--story <id...>", "Specific Storybook story IDs to capture")
     .option("--full-page", "Capture full page screenshot", false)
+    .option(
+      "--no-freeze-animations",
+      "Allow CSS animations/transitions during capture (default freezes motion for stable diffs)",
+    )
     .option("--headed", "Run browser in headed mode", false)
     .option("--diff-ratio-threshold <number>", "Minimum mismatch ratio to flag as changed", "0")
     .option("--pixel-threshold <number>", "Pixelmatch sensitivity threshold", "0.1")
@@ -141,6 +152,7 @@ async function main(): Promise<void> {
         height: toNumber(options.height, "height"),
         headless: !options.headed,
         fullPage: Boolean(options.fullPage),
+        freezeAnimations: options.freezeAnimations,
         targetSelector: options.targetSelector,
         storyIds: options.story,
       });
