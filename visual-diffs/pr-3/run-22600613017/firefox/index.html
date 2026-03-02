@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UVA Visual Snapshots Report</title>
+    <style>
+:root {
+  --bg: #f4efe8;
+  --panel: #ffffff;
+  --panel-alt: #f7faf3;
+  --text: #23211d;
+  --muted: #6f675f;
+  --accent: #155e63;
+  --warn: #9a3412;
+  --line: #ddd3c7;
+  --ok: #166534;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 15% 10%, #fdf7ed 0%, var(--bg) 58%, #ece6dd 100%);
+}
+.layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  border-right: 1px solid var(--line);
+  padding: 16px;
+  background: linear-gradient(180deg, #fffaf3 0%, #f3ede5 100%);
+  display: grid;
+  grid-template-rows: auto auto auto auto auto 1fr;
+  gap: 10px;
+  min-height: 0;
+}
+
+.sidebar h1 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.summary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-primary {
+  border-color: #8ad7de;
+  background: #ecfbfc;
+  color: var(--accent);
+}
+.btn-ok {
+  border-color: #bbe3c0;
+  background: #effaf0;
+  color: var(--ok);
+}
+.btn-warn {
+  border-color: #f6d7c2;
+  background: #fff4eb;
+  color: var(--warn);
+}
+
+.filter {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text);
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.filter.active {
+  border-color: var(--accent);
+  background: #ecfbfc;
+  color: var(--accent);
+}
+
+.status-text {
+  font-size: 0.78rem;
+  color: var(--muted);
+  min-height: 1.1rem;
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+  overflow: auto;
+  align-content: start;
+  min-height: 0;
+}
+
+.item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease;
+}
+
+.item:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+.item.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(21, 94, 99, 0.15);
+}
+.item .name {
+  display: block;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+}
+.item .badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  color: var(--warn);
+  background: #fff4eb;
+  border: 1px solid #f6d7c2;
+  border-radius: 999px;
+  padding: 2px 8px;
+  text-transform: lowercase;
+}
+
+.item .badge.ok {
+  color: var(--ok);
+  background: #effaf0;
+  border-color: #bbe3c0;
+}
+
+.main {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+.title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.title-row h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+.title-row .meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.entry-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.images {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 10px;
+  min-height: 360px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 8px;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.card .viewport {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  overflow: auto;
+  background: var(--panel-alt);
+}
+.card img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 20px;
+  text-align: center;
+}
+
+.diff {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.diff-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.diff-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.diff h3 {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.diff .viewport {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  overflow: auto;
+  background: var(--panel-alt);
+  min-height: 220px;
+}
+.diff-stage {
+  position: relative;
+  max-width: 100%;
+}
+.diff-stage img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.diff-stage .layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+#diff-base-img {
+  position: relative;
+  z-index: 1;
+}
+#diff-pixels-img {
+  z-index: 2;
+}
+#diff-focus-mask-img {
+  z-index: 3;
+}
+#diff-pixels-img.zap-red {
+  filter: saturate(1.25) hue-rotate(0deg);
+}
+#diff-pixels-img.zap-green {
+  filter: saturate(1.25) hue-rotate(120deg);
+}
+#btn-toggle-diff[aria-pressed="false"] {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+#btn-focus-diff[aria-pressed="false"] {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+#btn-zap-diff[aria-pressed="false"] {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+.metrics {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .images {
+    grid-template-columns: 1fr;
+  }
+  .title-row {
+    align-items: flex-start;
+  }
+}
+
+</style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script id="report-data" type="application/json">
+      {"generatedAt":"2026-03-02T23:30:18.386Z","baselineDir":"/home/runner/work/_temp/baseline","currentDir":"/home/runner/work/_temp/current-report","diffRatioThreshold":0,"pixelThreshold":0.1,"summary":{"total":7,"changed":1,"unchanged":6,"missingBaseline":1,"missingCurrent":0,"dimensionMismatch":0,"errors":0},"entries":[{"key":"components-button--disabled.png","storyId":"components-button--disabled","title":"Components/Button","name":"Disabled","status":"unchanged","baselineImage":"assets/baseline/components-button--disabled.png","currentImage":"assets/current/components-button--disabled.png","width":186,"height":76,"mismatchPixels":0,"mismatchRatio":0},{"key":"components-button--primary.png","storyId":"components-button--primary","title":"Components/Button","name":"Primary","status":"unchanged","baselineImage":"assets/baseline/components-button--primary.png","currentImage":"assets/current/components-button--primary.png","width":180,"height":76,"mismatchPixels":0,"mismatchRatio":0},{"key":"components-button--secondary.png","storyId":"components-button--secondary","title":"Components/Button","name":"Secondary","status":"unchanged","baselineImage":"assets/baseline/components-button--secondary.png","currentImage":"assets/current/components-button--secondary.png","width":200,"height":76,"mismatchPixels":0,"mismatchRatio":0},{"key":"components-card--default.png","storyId":"components-card--default","title":"Components/Card","name":"Default","status":"unchanged","baselineImage":"assets/baseline/components-card--default.png","currentImage":"assets/current/components-card--default.png","width":426,"height":142,"mismatchPixels":0,"mismatchRatio":0},{"key":"components-card--highlighted.png","storyId":"components-card--highlighted","title":"Components/Card","name":"Highlighted","status":"unchanged","baselineImage":"assets/baseline/components-card--highlighted.png","currentImage":"assets/current/components-card--highlighted.png","width":426,"height":142,"mismatchPixels":0,"mismatchRatio":0},{"key":"components-spinner--loading.png","storyId":"components-spinner--loading","title":"Components/Spinner","name":"Loading","status":"missing_baseline","currentImage":"assets/current/components-spinner--loading.png","notes":"Present in current run but missing in baseline."},{"key":"layout-long-content--scrollable.png","storyId":"layout-long-content--scrollable","title":"Layout/Long Content","name":"Scrollable","status":"unchanged","baselineImage":"assets/baseline/layout-long-content--scrollable.png","currentImage":"assets/current/layout-long-content--scrollable.png","width":486,"height":326,"mismatchPixels":0,"mismatchRatio":0}]}
+    </script>
+    <script>
+const rootNode = document.getElementById("app");
+const dataEl = document.getElementById("report-data");
+const emptyReport = {
+    summary: {
+        total: 0,
+        changed: 0,
+        unchanged: 0,
+        missingBaseline: 0,
+        missingCurrent: 0,
+        dimensionMismatch: 0,
+        errors: 0,
+    },
+    entries: [],
+};
+function readInlineReport() {
+    try {
+        return JSON.parse(dataEl?.textContent || "{}");
+    }
+    catch {
+        return null;
+    }
+}
+const inlineReport = readInlineReport();
+const initialReport = inlineReport || emptyReport;
+const statusMap = {
+    changed: "changed",
+    unchanged: "unchanged",
+    missing_baseline: "missing baseline",
+    missing_current: "missing current",
+    dimension_mismatch: "dimension mismatch",
+    error: "error",
+};
+const filters = [
+    { id: "all", label: "All", include: () => true },
+    { id: "changed", label: "Changed", include: (entry) => entry.status === "changed" },
+    { id: "unchanged", label: "Unchanged", include: (entry) => entry.status === "unchanged" },
+    {
+        id: "attention",
+        label: "Attention",
+        include: (entry) => entry.status === "missing_baseline" ||
+            entry.status === "missing_current" ||
+            entry.status === "dimension_mismatch" ||
+            entry.status === "error",
+    },
+];
+const fmtPercent = (value) => {
+    if (typeof value !== "number")
+        return "n/a";
+    return (value * 100).toFixed(3) + "%";
+};
+const normalizeSrc = (src) => {
+    if (!src)
+        return "";
+    if (/^[a-z]+:\/\//i.test(src) || src.startsWith("data:"))
+        return src;
+    return src.replace(/^\.\//, "");
+};
+const entryLabel = (entry) => entry.title && entry.name ? entry.title + " / " + entry.name : entry.storyId || entry.key;
+function renderBootstrapError(error) {
+    if (!rootNode) {
+        return;
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    rootNode.innerHTML =
+        "<main style='font-family: system-ui, sans-serif; padding: 16px; line-height: 1.5'>" +
+            "<h1 style='margin: 0 0 8px; font-size: 1.1rem'>Report UI failed to load</h1>" +
+            "<p style='margin: 0 0 8px'>React modules could not be loaded from CDN.</p>" +
+            "<p style='margin: 0'><code>" +
+            message.replace(/</g, "&lt;") +
+            "</code></p>" +
+            "</main>";
+}
+let React;
+let createRoot;
+function App() {
+    const [report, setReport] = React.useState(initialReport);
+    const [activeFilter, setActiveFilter] = React.useState("all");
+    const [selectedKey, setSelectedKey] = React.useState(null);
+    const [showDiff, setShowDiff] = React.useState(true);
+    const [focusDiff, setFocusDiff] = React.useState(false);
+    const [zapDiff, setZapDiff] = React.useState(false);
+    const [zapShowCurrent, setZapShowCurrent] = React.useState(false);
+    const [focusMaskSrc, setFocusMaskSrc] = React.useState("");
+    const focusMaskCacheRef = React.useRef({});
+    React.useEffect(() => {
+        if (inlineReport) {
+            return;
+        }
+        let cancelled = false;
+        fetch("/report-data.json", { cache: "no-store" })
+            .then((response) => (response.ok ? response.json() : emptyReport))
+            .then((nextReport) => {
+            if (!cancelled) {
+                setReport(nextReport || emptyReport);
+            }
+        })
+            .catch(() => {
+            if (!cancelled) {
+                setReport(emptyReport);
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+    const allEntries = React.useMemo(() => (Array.isArray(report.entries) ? report.entries : []), [report]);
+    const visibleEntries = React.useMemo(() => {
+        const active = filters.find((item) => item.id === activeFilter) || filters[0];
+        return allEntries.filter(active.include);
+    }, [allEntries, activeFilter]);
+    React.useEffect(() => {
+        if (visibleEntries.length === 0) {
+            setSelectedKey(null);
+            return;
+        }
+        if (!visibleEntries.some((entry) => entry.key === selectedKey)) {
+            setSelectedKey(visibleEntries[0].key);
+        }
+    }, [visibleEntries, selectedKey]);
+    const selectedEntry = React.useMemo(() => {
+        if (selectedKey) {
+            const match = allEntries.find((entry) => entry.key === selectedKey);
+            if (match)
+                return match;
+        }
+        return visibleEntries[0] || null;
+    }, [allEntries, selectedKey, visibleEntries]);
+    React.useEffect(() => {
+        setZapShowCurrent(false);
+    }, [selectedEntry?.key, zapDiff, showDiff]);
+    React.useEffect(() => {
+        if (!showDiff ||
+            !zapDiff ||
+            !selectedEntry ||
+            !selectedEntry.baselineImage ||
+            !selectedEntry.currentImage) {
+            return undefined;
+        }
+        const timer = window.setInterval(() => {
+            setZapShowCurrent((prev) => !prev);
+        }, 500);
+        return () => window.clearInterval(timer);
+    }, [showDiff, zapDiff, selectedEntry]);
+    React.useEffect(() => {
+        let cancelled = false;
+        async function buildFocusMask(diffSrc) {
+            const normalized = normalizeSrc(diffSrc);
+            if (!normalized)
+                return "";
+            const cache = focusMaskCacheRef.current;
+            if (cache[normalized]) {
+                return cache[normalized];
+            }
+            const image = await new Promise((resolve, reject) => {
+                const next = new Image();
+                next.onload = () => resolve(next);
+                next.onerror = () => reject(new Error("Failed to load diff image for focus mask."));
+                next.src = normalized;
+            });
+            const width = image.naturalWidth || image.width;
+            const height = image.naturalHeight || image.height;
+            const readCanvas = document.createElement("canvas");
+            readCanvas.width = width;
+            readCanvas.height = height;
+            const readCtx = readCanvas.getContext("2d");
+            if (!readCtx)
+                return "";
+            readCtx.drawImage(image, 0, 0);
+            const source = readCtx.getImageData(0, 0, width, height).data;
+            const maskCanvas = document.createElement("canvas");
+            maskCanvas.width = width;
+            maskCanvas.height = height;
+            const maskCtx = maskCanvas.getContext("2d");
+            if (!maskCtx)
+                return "";
+            const mask = maskCtx.createImageData(width, height);
+            for (let i = 0; i < source.length; i += 4) {
+                const r = source[i];
+                const g = source[i + 1];
+                const b = source[i + 2];
+                const a = source[i + 3];
+                const isDiffPixel = a > 0 && (Math.abs(r - g) > 28 || Math.abs(r - b) > 28 || Math.abs(g - b) > 28);
+                if (isDiffPixel) {
+                    mask.data[i + 3] = 0;
+                }
+                else {
+                    mask.data[i] = 0;
+                    mask.data[i + 1] = 0;
+                    mask.data[i + 2] = 0;
+                    mask.data[i + 3] = 170;
+                }
+            }
+            maskCtx.putImageData(mask, 0, 0);
+            const maskSrc = maskCanvas.toDataURL("image/png");
+            cache[normalized] = maskSrc;
+            return maskSrc;
+        }
+        if (!showDiff || !focusDiff || !selectedEntry?.diffImage) {
+            setFocusMaskSrc("");
+            return undefined;
+        }
+        buildFocusMask(selectedEntry.diffImage)
+            .then((src) => {
+            if (!cancelled) {
+                setFocusMaskSrc(src || "");
+            }
+        })
+            .catch(() => {
+            if (!cancelled) {
+                setFocusMaskSrc("");
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [showDiff, focusDiff, selectedEntry?.diffImage]);
+    const summary = report.summary || {};
+    const summaryText = String(summary.total || 0) +
+        " total · " +
+        String(summary.changed || 0) +
+        " changed · " +
+        String(summary.unchanged || 0) +
+        " unchanged";
+    const selectedIndex = selectedEntry && visibleEntries.length > 0
+        ? visibleEntries.findIndex((entry) => entry.key === selectedEntry.key)
+        : -1;
+    const metaText = selectedEntry && selectedIndex >= 0
+        ? "Entry " +
+            String(selectedIndex + 1) +
+            "/" +
+            String(visibleEntries.length) +
+            " · " +
+            selectedEntry.key
+        : "";
+    const metricsText = selectedEntry
+        ? "Status: " +
+            (statusMap[selectedEntry.status] || selectedEntry.status) +
+            " · mismatch pixels: " +
+            String(typeof selectedEntry.mismatchPixels === "number" ? selectedEntry.mismatchPixels : "n/a") +
+            " · mismatch ratio: " +
+            fmtPercent(selectedEntry.mismatchRatio) +
+            " · size: " +
+            String(selectedEntry.width && selectedEntry.height
+                ? selectedEntry.width + "x" + selectedEntry.height
+                : "n/a") +
+            (selectedEntry.notes ? " · " + selectedEntry.notes : "")
+        : allEntries.length === 0
+            ? "Run report command to generate report entries."
+            : "";
+    const diffReady = !!selectedEntry &&
+        !!selectedEntry.baselineImage &&
+        (showDiff ? !!selectedEntry.currentImage && !!selectedEntry.diffImage : true);
+    const diffBaseSrc = selectedEntry && selectedEntry.baselineImage
+        ? normalizeSrc(showDiff && zapDiff && zapShowCurrent && selectedEntry.currentImage
+            ? selectedEntry.currentImage
+            : selectedEntry.baselineImage)
+        : "";
+    const diffPixelsSrc = showDiff && selectedEntry?.diffImage ? normalizeSrc(selectedEntry.diffImage) : "";
+    const emptyTitle = allEntries.length === 0
+        ? "No snapshot entries found in report"
+        : "No snapshots match the selected filter";
+    return (React.createElement("div", { className: "layout" },
+        React.createElement("aside", { className: "sidebar" },
+            React.createElement("h1", null, "UVA Visual Snapshots Report"),
+            React.createElement("p", { className: "summary", id: "summary" }, summaryText),
+            React.createElement("div", { className: "filters", id: "filters" }, filters.map((filter) => (React.createElement("button", { key: filter.id, type: "button", className: filter.id === activeFilter ? "filter active" : "filter", onClick: () => setActiveFilter(filter.id), "data-filter": filter.id }, filter.label)))),
+            React.createElement("div", { id: "list", className: "list" }, visibleEntries.length === 0 ? (React.createElement("p", { className: "empty" }, "No snapshots match this filter.")) : (visibleEntries.map((entry) => (React.createElement("button", { key: entry.key, type: "button", className: entry.key === selectedEntry?.key ? "item active" : "item", "data-key": entry.key, onClick: () => setSelectedKey(entry.key) },
+                React.createElement("span", { className: "name" }, entryLabel(entry)),
+                React.createElement("span", { className: entry.status === "unchanged" ? "badge ok" : "badge" }, statusMap[entry.status] || entry.status))))))),
+        React.createElement("main", { className: "main" },
+            React.createElement("div", { className: "title-row" },
+                React.createElement("div", null,
+                    React.createElement("h2", { id: "story-title" }, selectedEntry ? entryLabel(selectedEntry) : emptyTitle),
+                    React.createElement("span", { className: "meta", id: "story-meta" }, metaText))),
+            React.createElement("section", { className: "images" },
+                React.createElement("article", { className: "card" },
+                    React.createElement("h3", null, "Baseline"),
+                    React.createElement("div", { className: "viewport" }, selectedEntry?.baselineImage ? (React.createElement("img", { id: "baseline-img", alt: "Baseline snapshot", src: normalizeSrc(selectedEntry.baselineImage) })) : (React.createElement("p", { className: "empty", id: "baseline-empty" }, "No baseline image for this entry.")))),
+                React.createElement("article", { className: "card" },
+                    React.createElement("h3", null, "Current"),
+                    React.createElement("div", { className: "viewport" }, selectedEntry?.currentImage ? (React.createElement("img", { id: "current-img", alt: "Current snapshot", src: normalizeSrc(selectedEntry.currentImage) })) : (React.createElement("p", { className: "empty", id: "current-empty" }, "No current image for this entry."))))),
+            React.createElement("section", { className: "diff" },
+                React.createElement("div", { className: "diff-head" },
+                    React.createElement("h3", null, "Diff"),
+                    React.createElement("div", { className: "diff-controls" },
+                        React.createElement("button", { id: "btn-toggle-diff", className: "btn btn-primary", type: "button", "aria-pressed": showDiff ? "true" : "false", onClick: () => setShowDiff((prev) => !prev) }, "Show Diff Pixels"),
+                        showDiff ? (React.createElement("button", { id: "btn-focus-diff", className: "btn btn-primary", type: "button", "aria-pressed": focusDiff ? "true" : "false", onClick: () => setFocusDiff((prev) => !prev) }, "Focus Diff")) : null,
+                        showDiff ? (React.createElement("button", { id: "btn-zap-diff", className: "btn btn-primary", type: "button", "aria-pressed": zapDiff ? "true" : "false", onClick: () => setZapDiff((prev) => !prev) }, "Zap")) : null)),
+                React.createElement("p", { className: "metrics", id: "metrics" }, metricsText),
+                React.createElement("div", { className: "viewport" }, diffReady ? (React.createElement("div", { id: "diff-stage", className: "diff-stage" },
+                    React.createElement("img", { id: "diff-base-img", alt: "Baseline image in diff panel", src: diffBaseSrc }),
+                    showDiff && diffPixelsSrc ? (React.createElement("img", { id: "diff-pixels-img", className: "layer" + (zapDiff ? (zapShowCurrent ? " zap-red" : " zap-green") : ""), alt: "", "aria-hidden": "true", src: diffPixelsSrc })) : null,
+                    showDiff && focusDiff && focusMaskSrc ? (React.createElement("img", { id: "diff-focus-mask-img", className: "layer", alt: "", "aria-hidden": "true", src: focusMaskSrc })) : null)) : (React.createElement("p", { className: "empty", id: "diff-empty" }, showDiff
+                    ? "No generated diff image for this entry."
+                    : "No baseline image for this entry.")))))));
+}
+async function bootstrap() {
+    try {
+        const [reactMod, reactDomMod] = await Promise.all([
+            import("https://esm.sh/react@18.3.1"),
+            import("https://esm.sh/react-dom@18.3.1/client"),
+        ]);
+        React = reactMod.default || reactMod;
+        createRoot = reactDomMod.createRoot;
+    }
+    catch (error) {
+        renderBootstrapError(error);
+        return;
+    }
+    if (rootNode) {
+        createRoot(rootNode).render(React.createElement(App, null));
+    }
+}
+void bootstrap();
+
+</script>
+  </body>
+</html>
