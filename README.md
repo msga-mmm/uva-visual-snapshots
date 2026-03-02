@@ -17,7 +17,7 @@ The report UI is read-only: it does not mutate snapshots from the browser.
 
 ```bash
 npm install
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 npm run build
 ```
 
@@ -45,6 +45,7 @@ uva-visual-snapshots baseline \
   --storybook-url http://localhost:6006 \
   --current .uva-visual-snapshots/current \
   --baseline .uva-visual-snapshots/baseline \
+  --browser chromium \
   --width 1280 \
   --height 720 \
   --target-selector "#storybook-root, #root" \
@@ -60,6 +61,7 @@ uva-visual-snapshots report \
   --current .uva-visual-snapshots/current \
   --baseline .uva-visual-snapshots/baseline \
   --report .uva-visual-snapshots/report \
+  --browser chromium \
   --width 1280 \
   --height 720 \
   --target-selector "#storybook-root, #root" \
@@ -67,6 +69,8 @@ uva-visual-snapshots report \
   --pixel-threshold 0.1 \
   --port 4400
 ```
+
+`--browser` supports `chromium` (default), `firefox`, and `webkit` (Safari engine).
 
 Use `--no-serve` when running in CI to generate report files without starting the report web server.
 

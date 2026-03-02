@@ -47,3 +47,23 @@
   border-color: #f59e0b;
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
 }
+
+.long-scroll-frame {
+  width: 420px;
+  height: 260px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f172a;
+  overflow-y: scroll;
+  padding: 1rem;
+}
+
+.long-scroll-frame h3 {
+  margin: 0 0 0.75rem;
+}
+
+.long-scroll-frame p {
+  margin: 0 0 0.75rem;
+  line-height: 1.45;
+}

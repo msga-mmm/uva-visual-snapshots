@@ -14,10 +14,19 @@ function toNumber(value: string, label: string): number {
   return parsed;
 }
 
+function toBrowser(value: string): "chromium" | "firefox" | "webkit" {
+  const normalized = value.toLowerCase();
+  if (normalized !== "chromium" && normalized !== "firefox" && normalized !== "webkit") {
+    throw new Error(`Invalid browser: ${value}. Expected chromium, firefox, or webkit.`);
+  }
+  return normalized;
+}
+
 interface BaselineCliOptions {
   storybookUrl: string;
   current: string;
   baseline: string;
+  browser: "chromium" | "firefox" | "webkit";
   width: string;
   height: string;
   targetSelector: string;
@@ -31,6 +40,7 @@ interface ReportCliOptions {
   current: string;
   baseline: string;
   report: string;
+  browser: "chromium" | "firefox" | "webkit";
   width: string;
   height: string;
   targetSelector: string;
@@ -59,6 +69,11 @@ async function main(): Promise<void> {
     .option("--storybook-url <url>", "Storybook URL", "http://localhost:6006")
     .option("--current <dir>", "Current snapshots directory", ".uva-visual-snapshots/current")
     .option("--baseline <dir>", "Baseline snapshots directory", ".uva-visual-snapshots/baseline")
+    .option(
+      "--browser <name>",
+      "Browser engine: chromium, firefox, or webkit (Safari engine)",
+      "chromium",
+    )
     .option("--width <px>", "Viewport width", "1280")
     .option("--height <px>", "Viewport height", "720")
     .option("--target-selector <selector>", "Root selector to screenshot", "#storybook-root, #root")
@@ -72,6 +87,7 @@ async function main(): Promise<void> {
       const manifest = await captureSnapshots({
         storybookUrl: options.storybookUrl,
         outputDir: currentDir,
+        browser: toBrowser(options.browser),
         width: toNumber(options.width, "width"),
         height: toNumber(options.height, "height"),
         headless: !options.headed,
@@ -97,6 +113,11 @@ async function main(): Promise<void> {
     .option("--current <dir>", "Current snapshots directory", ".uva-visual-snapshots/current")
     .option("--baseline <dir>", "Baseline snapshots directory", ".uva-visual-snapshots/baseline")
     .option("--report <dir>", "Output report directory", ".uva-visual-snapshots/report")
+    .option(
+      "--browser <name>",
+      "Browser engine: chromium, firefox, or webkit (Safari engine)",
+      "chromium",
+    )
     .option("--width <px>", "Viewport width", "1280")
     .option("--height <px>", "Viewport height", "720")
     .option("--target-selector <selector>", "Root selector to screenshot", "#storybook-root, #root")
@@ -115,6 +136,7 @@ async function main(): Promise<void> {
       const manifest = await captureSnapshots({
         storybookUrl: options.storybookUrl,
         outputDir: currentDir,
+        browser: toBrowser(options.browser),
         width: toNumber(options.width, "width"),
         height: toNumber(options.height, "height"),
         headless: !options.headed,

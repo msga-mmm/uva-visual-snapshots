@@ -9,6 +9,7 @@ STORYBOOK_URL="${STORYBOOK_URL:-}"
 WAIT_ATTEMPTS="${WAIT_ATTEMPTS:-90}"
 WAIT_SLEEP_SECONDS="${WAIT_SLEEP_SECONDS:-2}"
 REPORT_TIMEOUT_SECONDS="${REPORT_TIMEOUT_SECONDS:-180}"
+BROWSER="${BROWSER:-chromium}"
 
 if [[ -z "$MODE" || -z "$STORYBOOK_DIR" || -z "$TOOL_DIR" ]]; then
   echo "Missing required env vars. Required: MODE, STORYBOOK_DIR, TOOL_DIR"
@@ -73,6 +74,7 @@ if [[ "$MODE" == "baseline" ]]; then
     cd "$TOOL_DIR"
     npx tsx src/cli.ts baseline \
       --storybook-url "$STORYBOOK_URL" \
+      --browser "$BROWSER" \
       --current "$RUNNER_TEMP/current-baseline" \
       --baseline "$RUNNER_TEMP/baseline"
   )
@@ -82,6 +84,7 @@ else
     npx tsx src/cli.ts report
     --no-serve
     --storybook-url "$STORYBOOK_URL"
+    --browser "$BROWSER"
     --current "$RUNNER_TEMP/current-report"
     --baseline "$RUNNER_TEMP/baseline"
     --report "$RUNNER_TEMP/report"
