@@ -10,6 +10,9 @@ type ModalWithSpinnerArgs = {
 const meta: Meta<ModalWithSpinnerArgs> = {
   title: "Interactions/Modal With Spinner",
   tags: ["autodocs"],
+  parameters: {
+    layout: "fullscreen",
+  },
   render: ({ buttonLabel, title, spinnerLabel }) => {
     const root = document.createElement("div");
     root.className = "modal-demo";
