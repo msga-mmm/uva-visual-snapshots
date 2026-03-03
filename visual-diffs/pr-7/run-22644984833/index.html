@@ -1,0 +1,1301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UVA Visual Snapshots Report</title>
+    <style>
+:root {
+  --bg: #f4efe8;
+  --panel: #ffffff;
+  --panel-alt: #f7faf3;
+  --text: #23211d;
+  --muted: #6f675f;
+  --accent: #155e63;
+  --warn: #9a3412;
+  --line: #ddd3c7;
+  --ok: #166534;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 15% 10%, #fdf7ed 0%, var(--bg) 58%, #ece6dd 100%);
+}
+.layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  border-right: 1px solid var(--line);
+  padding: 16px;
+  background: linear-gradient(180deg, #fffaf3 0%, #f3ede5 100%);
+  display: grid;
+  grid-template-rows: auto auto auto auto auto 1fr;
+  gap: 10px;
+  min-height: 0;
+}
+
+.sidebar h1 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.summary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-primary {
+  border-color: #8ad7de;
+  background: #ecfbfc;
+  color: var(--accent);
+}
+.btn-ok {
+  border-color: #bbe3c0;
+  background: #effaf0;
+  color: var(--ok);
+}
+.btn-warn {
+  border-color: #f6d7c2;
+  background: #fff4eb;
+  color: var(--warn);
+}
+
+.filter {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text);
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.filter.active {
+  border-color: var(--accent);
+  background: #ecfbfc;
+  color: var(--accent);
+}
+
+.status-text {
+  font-size: 0.78rem;
+  color: var(--muted);
+  min-height: 1.1rem;
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+  overflow: auto;
+  align-content: start;
+  min-height: 0;
+}
+
+.item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease;
+}
+
+.item:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+.item.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(21, 94, 99, 0.15);
+}
+.item .name {
+  display: block;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+}
+.item .item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.item .cross-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  line-height: 1.2;
+  border: 1px solid var(--line);
+  background: #f8f5ef;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.item .cross-pill.diff {
+  border-color: #ef9a9a;
+  background: #fff1f1;
+  color: #b42318;
+}
+.item .cross-pill.same {
+  border-color: #bbe3c0;
+  background: #effaf0;
+  color: var(--ok);
+}
+.item .cross-pill.size {
+  border-color: #f6d7c2;
+  background: #fff4eb;
+  color: var(--warn);
+}
+.item .cross-pill.loading {
+  border-color: #8ad7de;
+  background: #ecfbfc;
+  color: var(--accent);
+}
+.item .cross-pill.na {
+  opacity: 0.7;
+}
+.item .browser-health-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.item .browser-health-chip {
+  display: inline-block;
+  font-size: 0.68rem;
+  line-height: 1;
+  border-radius: 999px;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  background: #f7f4ee;
+  color: var(--muted);
+}
+.item .browser-health-chip.muted {
+  opacity: 0.6;
+}
+.item .badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  color: var(--warn);
+  background: #fff4eb;
+  border: 1px solid #f6d7c2;
+  border-radius: 999px;
+  padding: 2px 8px;
+  text-transform: lowercase;
+}
+
+.item .badge.ok {
+  color: var(--ok);
+  background: #effaf0;
+  border-color: #bbe3c0;
+}
+
+.main {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+.title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.title-row h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+.title-row .meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.entry-actions {
+  display: flex;
+  gap: 8px;
+}
+.cross-matrix {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+}
+.cross-matrix-head h3 {
+  margin: 0;
+  font-size: 0.92rem;
+}
+.cross-matrix-head .metrics {
+  margin-top: 6px;
+}
+.cross-table {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.cross-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) repeat(4, minmax(72px, auto));
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-top: 1px solid var(--line);
+  font-size: 0.8rem;
+}
+.cross-row:first-child {
+  border-top: 0;
+}
+.cross-row-head {
+  background: #faf6ef;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.cross-story-label {
+  font-weight: 500;
+  color: var(--text);
+}
+.cross-cell {
+  display: inline-block;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 7px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  background: #f8f5ef;
+}
+.cross-cell.heat-low {
+  border-color: #bbe3c0;
+  background: #effaf0;
+  color: var(--ok);
+}
+.cross-cell.heat-medium {
+  border-color: #f6d7c2;
+  background: #fff4eb;
+  color: var(--warn);
+}
+.cross-cell.heat-high {
+  border-color: #ef9a9a;
+  background: #fff1f1;
+  color: #b42318;
+}
+
+.images {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 10px;
+  min-height: 360px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 8px;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.card .viewport {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  overflow: auto;
+  background: var(--panel-alt);
+}
+.card img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 20px;
+  text-align: center;
+}
+
+.diff {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.diff-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.diff-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.diff h3 {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.diff .viewport {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  overflow: auto;
+  background: var(--panel-alt);
+  min-height: 220px;
+}
+.diff-stage {
+  position: relative;
+  max-width: 100%;
+}
+.diff-stage img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.diff-stage .layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+#diff-base-img {
+  position: relative;
+  z-index: 1;
+}
+#diff-pixels-img {
+  z-index: 2;
+}
+#cross-diff-overlay-img {
+  z-index: 2;
+  mix-blend-mode: screen;
+  animation: cross-diff-pulse 1.1s ease-in-out infinite;
+}
+#diff-focus-mask-img {
+  z-index: 3;
+}
+#diff-pixels-img.zap-red {
+  filter: saturate(1.25) hue-rotate(0deg);
+}
+#diff-pixels-img.zap-green {
+  filter: saturate(1.25) hue-rotate(120deg);
+}
+#btn-toggle-diff[aria-pressed="false"] {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+#btn-focus-diff[aria-pressed="false"] {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+#btn-zap-diff[aria-pressed="false"] {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+.metrics {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+@keyframes cross-diff-pulse {
+  0% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.82;
+  }
+}
+
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .images {
+    grid-template-columns: 1fr;
+  }
+  .title-row {
+    align-items: flex-start;
+  }
+  .cross-row {
+    grid-template-columns: minmax(160px, 1fr) repeat(4, minmax(60px, auto));
+    font-size: 0.74rem;
+  }
+}
+
+</style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script id="report-data" type="application/json">
+      {"generatedAt":"2026-03-03T22:10:01.927Z","baselineDir":"/home/runner/work/_temp/baseline","currentDir":"/home/runner/work/_temp/current-report","diffRatioThreshold":0,"pixelThreshold":0.1,"summary":{"total":24,"changed":9,"unchanged":15,"missingBaseline":0,"missingCurrent":0,"dimensionMismatch":0,"errors":0},"entries":[{"key":"chromium/default/components-button--disabled.png","snapshotKey":"default/components-button--disabled.png","browser":"chromium","storyId":"components-button--disabled","title":"Components/Button","name":"Disabled","status":"changed","baselineImage":"assets/baseline/chromium/default/components-button--disabled.png","currentImage":"assets/current/chromium/default/components-button--disabled.png","diffImage":"assets/diff/chromium/default/components-button--disabled.png","mismatchPixels":5183,"mismatchRatio":0.005623914930555555,"width":1280,"height":720},{"key":"chromium/default/components-button--primary.png","snapshotKey":"default/components-button--primary.png","browser":"chromium","storyId":"components-button--primary","title":"Components/Button","name":"Primary","status":"changed","baselineImage":"assets/baseline/chromium/default/components-button--primary.png","currentImage":"assets/current/chromium/default/components-button--primary.png","diffImage":"assets/diff/chromium/default/components-button--primary.png","mismatchPixels":4991,"mismatchRatio":0.005415581597222222,"width":1280,"height":720},{"key":"chromium/default/components-button--secondary.png","snapshotKey":"default/components-button--secondary.png","browser":"chromium","storyId":"components-button--secondary","title":"Components/Button","name":"Secondary","status":"unchanged","baselineImage":"assets/baseline/chromium/default/components-button--secondary.png","currentImage":"assets/current/chromium/default/components-button--secondary.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"chromium/default/components-card--default.png","snapshotKey":"default/components-card--default.png","browser":"chromium","storyId":"components-card--default","title":"Components/Card","name":"Default","status":"unchanged","baselineImage":"assets/baseline/chromium/default/components-card--default.png","currentImage":"assets/current/chromium/default/components-card--default.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"chromium/default/components-card--highlighted.png","snapshotKey":"default/components-card--highlighted.png","browser":"chromium","storyId":"components-card--highlighted","title":"Components/Card","name":"Highlighted","status":"unchanged","baselineImage":"assets/baseline/chromium/default/components-card--highlighted.png","currentImage":"assets/current/chromium/default/components-card--highlighted.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"chromium/default/components-spinner--loading.png","snapshotKey":"default/components-spinner--loading.png","browser":"chromium","storyId":"components-spinner--loading","title":"Components/Spinner","name":"Loading","status":"unchanged","baselineImage":"assets/baseline/chromium/default/components-spinner--loading.png","currentImage":"assets/current/chromium/default/components-spinner--loading.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"chromium/default/interactions-modal-with-spinner--default.png","snapshotKey":"default/interactions-modal-with-spinner--default.png","browser":"chromium","storyId":"interactions-modal-with-spinner--default","title":"Interactions/Modal With Spinner","name":"Default","status":"unchanged","baselineImage":"assets/baseline/chromium/default/interactions-modal-with-spinner--default.png","currentImage":"assets/current/chromium/default/interactions-modal-with-spinner--default.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"chromium/default/layout-long-content--scrollable.png","snapshotKey":"default/layout-long-content--scrollable.png","browser":"chromium","storyId":"layout-long-content--scrollable","title":"Layout/Long Content","name":"Scrollable","status":"changed","baselineImage":"assets/baseline/chromium/default/layout-long-content--scrollable.png","currentImage":"assets/current/chromium/default/layout-long-content--scrollable.png","diffImage":"assets/diff/chromium/default/layout-long-content--scrollable.png","mismatchPixels":6,"mismatchRatio":0.000006510416666666667,"width":1280,"height":720},{"key":"firefox/default/components-button--disabled.png","snapshotKey":"default/components-button--disabled.png","browser":"firefox","storyId":"components-button--disabled","title":"Components/Button","name":"Disabled","status":"changed","baselineImage":"assets/baseline/firefox/default/components-button--disabled.png","currentImage":"assets/current/firefox/default/components-button--disabled.png","diffImage":"assets/diff/firefox/default/components-button--disabled.png","mismatchPixels":5877,"mismatchRatio":0.006376953125,"width":1280,"height":720},{"key":"firefox/default/components-button--primary.png","snapshotKey":"default/components-button--primary.png","browser":"firefox","storyId":"components-button--primary","title":"Components/Button","name":"Primary","status":"changed","baselineImage":"assets/baseline/firefox/default/components-button--primary.png","currentImage":"assets/current/firefox/default/components-button--primary.png","diffImage":"assets/diff/firefox/default/components-button--primary.png","mismatchPixels":5605,"mismatchRatio":0.006081814236111111,"width":1280,"height":720},{"key":"firefox/default/components-button--secondary.png","snapshotKey":"default/components-button--secondary.png","browser":"firefox","storyId":"components-button--secondary","title":"Components/Button","name":"Secondary","status":"unchanged","baselineImage":"assets/baseline/firefox/default/components-button--secondary.png","currentImage":"assets/current/firefox/default/components-button--secondary.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"firefox/default/components-card--default.png","snapshotKey":"default/components-card--default.png","browser":"firefox","storyId":"components-card--default","title":"Components/Card","name":"Default","status":"unchanged","baselineImage":"assets/baseline/firefox/default/components-card--default.png","currentImage":"assets/current/firefox/default/components-card--default.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"firefox/default/components-card--highlighted.png","snapshotKey":"default/components-card--highlighted.png","browser":"firefox","storyId":"components-card--highlighted","title":"Components/Card","name":"Highlighted","status":"unchanged","baselineImage":"assets/baseline/firefox/default/components-card--highlighted.png","currentImage":"assets/current/firefox/default/components-card--highlighted.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"firefox/default/components-spinner--loading.png","snapshotKey":"default/components-spinner--loading.png","browser":"firefox","storyId":"components-spinner--loading","title":"Components/Spinner","name":"Loading","status":"unchanged","baselineImage":"assets/baseline/firefox/default/components-spinner--loading.png","currentImage":"assets/current/firefox/default/components-spinner--loading.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"firefox/default/interactions-modal-with-spinner--default.png","snapshotKey":"default/interactions-modal-with-spinner--default.png","browser":"firefox","storyId":"interactions-modal-with-spinner--default","title":"Interactions/Modal With Spinner","name":"Default","status":"unchanged","baselineImage":"assets/baseline/firefox/default/interactions-modal-with-spinner--default.png","currentImage":"assets/current/firefox/default/interactions-modal-with-spinner--default.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"firefox/default/layout-long-content--scrollable.png","snapshotKey":"default/layout-long-content--scrollable.png","browser":"firefox","storyId":"layout-long-content--scrollable","title":"Layout/Long Content","name":"Scrollable","status":"changed","baselineImage":"assets/baseline/firefox/default/layout-long-content--scrollable.png","currentImage":"assets/current/firefox/default/layout-long-content--scrollable.png","diffImage":"assets/diff/firefox/default/layout-long-content--scrollable.png","mismatchPixels":12,"mismatchRatio":0.000013020833333333334,"width":1280,"height":720},{"key":"webkit/default/components-button--disabled.png","snapshotKey":"default/components-button--disabled.png","browser":"webkit","storyId":"components-button--disabled","title":"Components/Button","name":"Disabled","status":"changed","baselineImage":"assets/baseline/webkit/default/components-button--disabled.png","currentImage":"assets/current/webkit/default/components-button--disabled.png","diffImage":"assets/diff/webkit/default/components-button--disabled.png","mismatchPixels":5693,"mismatchRatio":0.0061773003472222225,"width":1280,"height":720},{"key":"webkit/default/components-button--primary.png","snapshotKey":"default/components-button--primary.png","browser":"webkit","storyId":"components-button--primary","title":"Components/Button","name":"Primary","status":"changed","baselineImage":"assets/baseline/webkit/default/components-button--primary.png","currentImage":"assets/current/webkit/default/components-button--primary.png","diffImage":"assets/diff/webkit/default/components-button--primary.png","mismatchPixels":5419,"mismatchRatio":0.005879991319444444,"width":1280,"height":720},{"key":"webkit/default/components-button--secondary.png","snapshotKey":"default/components-button--secondary.png","browser":"webkit","storyId":"components-button--secondary","title":"Components/Button","name":"Secondary","status":"unchanged","baselineImage":"assets/baseline/webkit/default/components-button--secondary.png","currentImage":"assets/current/webkit/default/components-button--secondary.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"webkit/default/components-card--default.png","snapshotKey":"default/components-card--default.png","browser":"webkit","storyId":"components-card--default","title":"Components/Card","name":"Default","status":"unchanged","baselineImage":"assets/baseline/webkit/default/components-card--default.png","currentImage":"assets/current/webkit/default/components-card--default.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"webkit/default/components-card--highlighted.png","snapshotKey":"default/components-card--highlighted.png","browser":"webkit","storyId":"components-card--highlighted","title":"Components/Card","name":"Highlighted","status":"unchanged","baselineImage":"assets/baseline/webkit/default/components-card--highlighted.png","currentImage":"assets/current/webkit/default/components-card--highlighted.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"webkit/default/components-spinner--loading.png","snapshotKey":"default/components-spinner--loading.png","browser":"webkit","storyId":"components-spinner--loading","title":"Components/Spinner","name":"Loading","status":"unchanged","baselineImage":"assets/baseline/webkit/default/components-spinner--loading.png","currentImage":"assets/current/webkit/default/components-spinner--loading.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"webkit/default/interactions-modal-with-spinner--default.png","snapshotKey":"default/interactions-modal-with-spinner--default.png","browser":"webkit","storyId":"interactions-modal-with-spinner--default","title":"Interactions/Modal With Spinner","name":"Default","status":"unchanged","baselineImage":"assets/baseline/webkit/default/interactions-modal-with-spinner--default.png","currentImage":"assets/current/webkit/default/interactions-modal-with-spinner--default.png","width":1280,"height":720,"mismatchPixels":0,"mismatchRatio":0},{"key":"webkit/default/layout-long-content--scrollable.png","snapshotKey":"default/layout-long-content--scrollable.png","browser":"webkit","storyId":"layout-long-content--scrollable","title":"Layout/Long Content","name":"Scrollable","status":"changed","baselineImage":"assets/baseline/webkit/default/layout-long-content--scrollable.png","currentImage":"assets/current/webkit/default/layout-long-content--scrollable.png","diffImage":"assets/diff/webkit/default/layout-long-content--scrollable.png","mismatchPixels":12,"mismatchRatio":0.000013020833333333334,"width":1280,"height":720}]}
+    </script>
+    <script>
+const rootNode = document.getElementById("app");
+const dataEl = document.getElementById("report-data");
+const emptyReport = {
+    summary: {
+        total: 0,
+        changed: 0,
+        unchanged: 0,
+        missingBaseline: 0,
+        missingCurrent: 0,
+        dimensionMismatch: 0,
+        errors: 0,
+    },
+    entries: [],
+};
+function readInlineReport() {
+    try {
+        return JSON.parse(dataEl?.textContent || "{}");
+    }
+    catch {
+        return null;
+    }
+}
+const inlineReport = readInlineReport();
+const initialReport = inlineReport || emptyReport;
+const statusMap = {
+    changed: "changed",
+    unchanged: "unchanged",
+    missing_baseline: "missing baseline",
+    missing_current: "missing current",
+    dimension_mismatch: "dimension mismatch",
+    error: "error",
+};
+const filters = [
+    { id: "all", label: "All", include: () => true },
+    { id: "changed", label: "Changed", include: (entry) => entry.status === "changed" },
+    { id: "unchanged", label: "Unchanged", include: (entry) => entry.status === "unchanged" },
+    {
+        id: "attention",
+        label: "Attention",
+        include: (entry) => entry.status === "missing_baseline" ||
+            entry.status === "missing_current" ||
+            entry.status === "dimension_mismatch" ||
+            entry.status === "error",
+    },
+];
+const browserOrder = ["chromium", "firefox", "webkit"];
+const browserLabel = {
+    chromium: "Chromium",
+    firefox: "Firefox",
+    webkit: "WebKit",
+};
+const browserShortLabel = {
+    chromium: "C",
+    firefox: "F",
+    webkit: "W",
+};
+const attentionStatuses = new Set(["missing_baseline", "missing_current", "dimension_mismatch", "error"]);
+const browserPairs = [
+    { id: "cf", left: "chromium", right: "firefox", label: "C↔F" },
+    { id: "cw", left: "chromium", right: "webkit", label: "C↔W" },
+    { id: "fw", left: "firefox", right: "webkit", label: "F↔W" },
+];
+const fmtPercent = (value) => {
+    if (typeof value !== "number")
+        return "n/a";
+    return (value * 100).toFixed(3) + "%";
+};
+const normalizeSrc = (src) => {
+    if (!src)
+        return "";
+    if (/^[a-z]+:\/\//i.test(src) || src.startsWith("data:"))
+        return src;
+    return src.replace(/^\.\//, "");
+};
+const entryLabel = (entry) => entry.title && entry.name
+    ? entry.title + " / " + entry.name
+    : entry.storyId || entry.snapshotKey || entry.key;
+const browserChipText = (entry, browser) => entry?.currentImage
+    ? `${browserShortLabel[browser] || browser.toUpperCase()} ok`
+    : `${browserShortLabel[browser] || browser.toUpperCase()} -`;
+async function buildDiffOverlayBySrc(leftSrc, rightSrc) {
+    if (!leftSrc || !rightSrc) {
+        return {
+            status: "no_data",
+            message: "missing snapshot",
+            mismatchPixels: null,
+            mismatchRatio: null,
+            leftSrc: normalizeSrc(leftSrc),
+            rightSrc: normalizeSrc(rightSrc),
+            overlaySrc: "",
+        };
+    }
+    const loadImage = async (src) => await new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error("Failed to load snapshot image."));
+        image.src = normalizeSrc(src);
+    });
+    const leftImage = await loadImage(leftSrc);
+    const rightImage = await loadImage(rightSrc);
+    const leftWidth = leftImage.naturalWidth || leftImage.width;
+    const leftHeight = leftImage.naturalHeight || leftImage.height;
+    const rightWidth = rightImage.naturalWidth || rightImage.width;
+    const rightHeight = rightImage.naturalHeight || rightImage.height;
+    if (leftWidth !== rightWidth || leftHeight !== rightHeight) {
+        return {
+            status: "dimension_mismatch",
+            message: `${leftWidth}x${leftHeight} vs ${rightWidth}x${rightHeight}`,
+            mismatchPixels: null,
+            mismatchRatio: null,
+            leftSrc: normalizeSrc(leftSrc),
+            rightSrc: normalizeSrc(rightSrc),
+            overlaySrc: "",
+        };
+    }
+    const width = leftWidth;
+    const height = leftHeight;
+    const leftCanvas = document.createElement("canvas");
+    leftCanvas.width = width;
+    leftCanvas.height = height;
+    const rightCanvas = document.createElement("canvas");
+    rightCanvas.width = width;
+    rightCanvas.height = height;
+    const leftCtx = leftCanvas.getContext("2d");
+    const rightCtx = rightCanvas.getContext("2d");
+    if (!leftCtx || !rightCtx) {
+        throw new Error("Canvas is not available in this browser.");
+    }
+    leftCtx.drawImage(leftImage, 0, 0);
+    rightCtx.drawImage(rightImage, 0, 0);
+    const leftData = leftCtx.getImageData(0, 0, width, height).data;
+    const rightData = rightCtx.getImageData(0, 0, width, height).data;
+    const overlayCanvas = document.createElement("canvas");
+    overlayCanvas.width = width;
+    overlayCanvas.height = height;
+    const overlayCtx = overlayCanvas.getContext("2d");
+    if (!overlayCtx) {
+        throw new Error("Canvas is not available in this browser.");
+    }
+    const overlay = overlayCtx.createImageData(width, height);
+    let mismatchPixels = 0;
+    for (let i = 0; i < leftData.length; i += 4) {
+        if (leftData[i] !== rightData[i] ||
+            leftData[i + 1] !== rightData[i + 1] ||
+            leftData[i + 2] !== rightData[i + 2] ||
+            leftData[i + 3] !== rightData[i + 3]) {
+            mismatchPixels += 1;
+            overlay.data[i] = 255;
+            overlay.data[i + 1] = 0;
+            overlay.data[i + 2] = 64;
+            overlay.data[i + 3] = 245;
+        }
+        else {
+            // Dim unchanged pixels so changed regions remain easy to spot.
+            overlay.data[i] = 7;
+            overlay.data[i + 1] = 9;
+            overlay.data[i + 2] = 14;
+            overlay.data[i + 3] = 82;
+        }
+    }
+    overlayCtx.putImageData(overlay, 0, 0);
+    return {
+        status: "ready",
+        message: "",
+        mismatchPixels,
+        mismatchRatio: mismatchPixels / (width * height),
+        leftSrc: normalizeSrc(leftSrc),
+        rightSrc: normalizeSrc(rightSrc),
+        overlaySrc: overlayCanvas.toDataURL("image/png"),
+    };
+}
+async function compareImagesBySrc(leftSrc, rightSrc) {
+    if (!leftSrc || !rightSrc) {
+        return { status: "no_data", message: "missing snapshot", mismatchPixels: null, mismatchRatio: null };
+    }
+    const loadImage = async (src) => await new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error("Failed to load snapshot image."));
+        image.src = normalizeSrc(src);
+    });
+    const leftImage = await loadImage(leftSrc);
+    const rightImage = await loadImage(rightSrc);
+    const leftWidth = leftImage.naturalWidth || leftImage.width;
+    const leftHeight = leftImage.naturalHeight || leftImage.height;
+    const rightWidth = rightImage.naturalWidth || rightImage.width;
+    const rightHeight = rightImage.naturalHeight || rightImage.height;
+    if (leftWidth !== rightWidth || leftHeight !== rightHeight) {
+        return {
+            status: "dimension_mismatch",
+            message: `${leftWidth}x${leftHeight} vs ${rightWidth}x${rightHeight}`,
+            mismatchPixels: null,
+            mismatchRatio: null,
+        };
+    }
+    const width = leftWidth;
+    const height = leftHeight;
+    const leftCanvas = document.createElement("canvas");
+    leftCanvas.width = width;
+    leftCanvas.height = height;
+    const rightCanvas = document.createElement("canvas");
+    rightCanvas.width = width;
+    rightCanvas.height = height;
+    const leftCtx = leftCanvas.getContext("2d");
+    const rightCtx = rightCanvas.getContext("2d");
+    if (!leftCtx || !rightCtx) {
+        throw new Error("Canvas is not available in this browser.");
+    }
+    leftCtx.drawImage(leftImage, 0, 0);
+    rightCtx.drawImage(rightImage, 0, 0);
+    const leftData = leftCtx.getImageData(0, 0, width, height).data;
+    const rightData = rightCtx.getImageData(0, 0, width, height).data;
+    let mismatchPixels = 0;
+    for (let i = 0; i < leftData.length; i += 4) {
+        if (leftData[i] !== rightData[i] ||
+            leftData[i + 1] !== rightData[i + 1] ||
+            leftData[i + 2] !== rightData[i + 2] ||
+            leftData[i + 3] !== rightData[i + 3]) {
+            mismatchPixels += 1;
+        }
+    }
+    return {
+        status: "ready",
+        message: "",
+        mismatchPixels,
+        mismatchRatio: mismatchPixels / (width * height),
+    };
+}
+function renderBootstrapError(error) {
+    if (!rootNode) {
+        return;
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    rootNode.innerHTML =
+        "<main style='font-family: system-ui, sans-serif; padding: 16px; line-height: 1.5'>" +
+            "<h1 style='margin: 0 0 8px; font-size: 1.1rem'>Report UI failed to load</h1>" +
+            "<p style='margin: 0 0 8px'>React modules could not be loaded from CDN.</p>" +
+            "<p style='margin: 0'><code>" +
+            message.replace(/</g, "&lt;") +
+            "</code></p>" +
+            "</main>";
+}
+let React;
+let createRoot;
+function App() {
+    const [report, setReport] = React.useState(initialReport);
+    const [compareMode, setCompareMode] = React.useState("baseline_current");
+    const [activeFilter, setActiveFilter] = React.useState("all");
+    const [selectedStoryKey, setSelectedStoryKey] = React.useState(null);
+    const [activeStoryBrowser, setActiveStoryBrowser] = React.useState(null);
+    const [crossPairDiffs, setCrossPairDiffs] = React.useState({});
+    const [crossPairDiffsLoading, setCrossPairDiffsLoading] = React.useState(false);
+    const [activeCrossPairId, setActiveCrossPairId] = React.useState(browserPairs[0].id);
+    const [crossInterpolate, setCrossInterpolate] = React.useState(true);
+    const [crossStorySignals, setCrossStorySignals] = React.useState({});
+    const [showDiff, setShowDiff] = React.useState(true);
+    const [focusDiff, setFocusDiff] = React.useState(false);
+    const [zapDiff, setZapDiff] = React.useState(false);
+    const [zapShowCurrent, setZapShowCurrent] = React.useState(false);
+    const [focusMaskSrc, setFocusMaskSrc] = React.useState("");
+    const focusMaskCacheRef = React.useRef({});
+    React.useEffect(() => {
+        if (inlineReport) {
+            return;
+        }
+        let cancelled = false;
+        fetch("/report-data.json", { cache: "no-store" })
+            .then((response) => (response.ok ? response.json() : emptyReport))
+            .then((nextReport) => {
+            if (!cancelled) {
+                setReport(nextReport || emptyReport);
+            }
+        })
+            .catch(() => {
+            if (!cancelled) {
+                setReport(emptyReport);
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+    const allEntries = React.useMemo(() => (Array.isArray(report.entries) ? report.entries : []), [report]);
+    const storyGroups = React.useMemo(() => {
+        const byStory = new Map();
+        for (const entry of allEntries) {
+            const snapshotKey = entry.snapshotKey || entry.key;
+            const browser = typeof entry.browser === "string" && browserOrder.includes(entry.browser)
+                ? entry.browser
+                : "chromium";
+            const existing = byStory.get(snapshotKey);
+            if (existing) {
+                existing.entriesByBrowser[browser] = entry;
+            }
+            else {
+                byStory.set(snapshotKey, {
+                    storyKey: snapshotKey,
+                    label: entryLabel(entry),
+                    entriesByBrowser: { [browser]: entry },
+                });
+            }
+        }
+        const stories = [...byStory.values()].map((story) => {
+            const browsers = browserOrder.filter((browser) => story.entriesByBrowser[browser]);
+            const entries = browsers
+                .map((browser) => story.entriesByBrowser[browser])
+                .filter(Boolean);
+            const hasChanged = entries.some((entry) => entry.status === "changed");
+            const hasAttention = entries.some((entry) => attentionStatuses.has(entry.status));
+            const isUnchanged = entries.length > 0 && entries.every((entry) => entry.status === "unchanged");
+            const status = hasChanged ? "changed" : hasAttention ? "attention" : "unchanged";
+            const browserHealth = browserOrder.map((browser) => ({
+                browser,
+                entry: story.entriesByBrowser[browser] || null,
+                hasCurrent: Boolean(story.entriesByBrowser[browser]?.currentImage),
+            }));
+            return {
+                ...story,
+                browsers,
+                entries,
+                hasChanged,
+                hasAttention,
+                isUnchanged,
+                status,
+                browserHealth,
+            };
+        });
+        stories.sort((a, b) => a.label.localeCompare(b.label));
+        return stories;
+    }, [allEntries]);
+    const visibleStories = React.useMemo(() => {
+        const active = filters.find((item) => item.id === activeFilter) || filters[0];
+        if (active.id === "all") {
+            return storyGroups;
+        }
+        if (active.id === "changed") {
+            return storyGroups.filter((story) => story.hasChanged);
+        }
+        if (active.id === "unchanged") {
+            return storyGroups.filter((story) => story.isUnchanged);
+        }
+        return storyGroups.filter((story) => story.hasAttention);
+    }, [storyGroups, activeFilter]);
+    React.useEffect(() => {
+        if (visibleStories.length === 0) {
+            setSelectedStoryKey(null);
+            return;
+        }
+        if (!visibleStories.some((story) => story.storyKey === selectedStoryKey)) {
+            setSelectedStoryKey(visibleStories[0].storyKey);
+        }
+    }, [visibleStories, selectedStoryKey]);
+    const selectedStory = React.useMemo(() => {
+        if (selectedStoryKey) {
+            const match = visibleStories.find((story) => story.storyKey === selectedStoryKey);
+            if (match)
+                return match;
+        }
+        return visibleStories[0] || null;
+    }, [selectedStoryKey, visibleStories]);
+    React.useEffect(() => {
+        if (!selectedStory || selectedStory.browsers.length === 0) {
+            setActiveStoryBrowser(null);
+            return;
+        }
+        if (!activeStoryBrowser || !selectedStory.browsers.includes(activeStoryBrowser)) {
+            setActiveStoryBrowser(selectedStory.browsers[0]);
+        }
+    }, [selectedStory, activeStoryBrowser]);
+    React.useEffect(() => {
+        if (compareMode === "cross_browser") {
+            setShowDiff(true);
+            setFocusDiff(false);
+            setZapDiff(false);
+        }
+    }, [compareMode]);
+    const selectedEntry = React.useMemo(() => {
+        if (!selectedStory) {
+            return null;
+        }
+        if (activeStoryBrowser && selectedStory.entriesByBrowser[activeStoryBrowser]) {
+            return selectedStory.entriesByBrowser[activeStoryBrowser];
+        }
+        const fallbackBrowser = selectedStory.browsers[0];
+        return fallbackBrowser ? selectedStory.entriesByBrowser[fallbackBrowser] : null;
+    }, [selectedStory, activeStoryBrowser]);
+    React.useEffect(() => {
+        if (compareMode !== "cross_browser") {
+            setCrossPairDiffs({});
+            setCrossPairDiffsLoading(false);
+            return;
+        }
+        let cancelled = false;
+        setCrossPairDiffsLoading(true);
+        async function buildSelectedStoryDiffs() {
+            if (!selectedStory) {
+                setCrossPairDiffs({});
+                setCrossPairDiffsLoading(false);
+                return;
+            }
+            const next = {};
+            for (const pair of browserPairs) {
+                const leftSrc = selectedStory.entriesByBrowser[pair.left]?.currentImage;
+                const rightSrc = selectedStory.entriesByBrowser[pair.right]?.currentImage;
+                try {
+                    next[pair.id] = await buildDiffOverlayBySrc(leftSrc, rightSrc);
+                }
+                catch (error) {
+                    const message = error instanceof Error ? error.message : String(error);
+                    next[pair.id] = {
+                        status: "error",
+                        message,
+                        mismatchPixels: null,
+                        mismatchRatio: null,
+                        leftSrc: normalizeSrc(leftSrc),
+                        rightSrc: normalizeSrc(rightSrc),
+                        overlaySrc: "",
+                    };
+                }
+            }
+            if (!cancelled) {
+                setCrossPairDiffs(next);
+                setCrossPairDiffsLoading(false);
+            }
+        }
+        void buildSelectedStoryDiffs();
+        return () => {
+            cancelled = true;
+        };
+    }, [compareMode, selectedStory]);
+    React.useEffect(() => {
+        if (compareMode !== "cross_browser") {
+            setCrossStorySignals({});
+            return;
+        }
+        let cancelled = false;
+        const loading = {};
+        for (const story of visibleStories) {
+            loading[story.storyKey] = { state: "loading", worstRatio: null };
+        }
+        setCrossStorySignals(loading);
+        async function computeSignals() {
+            const next = {};
+            for (const story of visibleStories) {
+                let hasDiff = false;
+                let comparableCount = 0;
+                let hasDimensionMismatch = false;
+                let worstRatio = 0;
+                for (const pair of browserPairs) {
+                    const leftSrc = story.entriesByBrowser[pair.left]?.currentImage;
+                    const rightSrc = story.entriesByBrowser[pair.right]?.currentImage;
+                    try {
+                        const result = await compareImagesBySrc(leftSrc, rightSrc);
+                        if (result.status === "dimension_mismatch") {
+                            hasDimensionMismatch = true;
+                            continue;
+                        }
+                        if (result.status === "ready") {
+                            comparableCount += 1;
+                            if (typeof result.mismatchRatio === "number") {
+                                worstRatio = Math.max(worstRatio, result.mismatchRatio);
+                            }
+                            if ((result.mismatchRatio || 0) > 0) {
+                                hasDiff = true;
+                                break;
+                            }
+                        }
+                    }
+                    catch {
+                        // Ignore compare failures for list indicator; card view still exposes detailed errors.
+                    }
+                }
+                next[story.storyKey] = {
+                    state: hasDiff
+                        ? "diff"
+                        : hasDimensionMismatch
+                            ? "size"
+                            : comparableCount > 0
+                                ? "same"
+                                : "na",
+                    worstRatio: comparableCount > 0 ? worstRatio : null,
+                };
+            }
+            if (!cancelled) {
+                setCrossStorySignals(next);
+            }
+        }
+        void computeSignals();
+        return () => {
+            cancelled = true;
+        };
+    }, [compareMode, visibleStories]);
+    React.useEffect(() => {
+        if (compareMode !== "cross_browser") {
+            return;
+        }
+        if (!crossInterpolate) {
+            return;
+        }
+        const readyPairs = browserPairs.filter((pair) => crossPairDiffs[pair.id]?.status === "ready");
+        if (readyPairs.length <= 1) {
+            return;
+        }
+        const timer = window.setInterval(() => {
+            setActiveCrossPairId((prev) => {
+                const currentIndex = readyPairs.findIndex((pair) => pair.id === prev);
+                const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % readyPairs.length : 0;
+                return readyPairs[nextIndex].id;
+            });
+        }, 900);
+        return () => window.clearInterval(timer);
+    }, [compareMode, crossInterpolate, crossPairDiffs]);
+    React.useEffect(() => {
+        setZapShowCurrent(false);
+    }, [selectedEntry?.key, zapDiff, showDiff]);
+    React.useEffect(() => {
+        if (!showDiff ||
+            !zapDiff ||
+            !selectedEntry ||
+            !selectedEntry.baselineImage ||
+            !selectedEntry.currentImage) {
+            return undefined;
+        }
+        const timer = window.setInterval(() => {
+            setZapShowCurrent((prev) => !prev);
+        }, 500);
+        return () => window.clearInterval(timer);
+    }, [showDiff, zapDiff, selectedEntry]);
+    React.useEffect(() => {
+        let cancelled = false;
+        async function buildFocusMask(diffSrc) {
+            const normalized = normalizeSrc(diffSrc);
+            if (!normalized)
+                return "";
+            const cache = focusMaskCacheRef.current;
+            if (cache[normalized]) {
+                return cache[normalized];
+            }
+            const image = await new Promise((resolve, reject) => {
+                const next = new Image();
+                next.onload = () => resolve(next);
+                next.onerror = () => reject(new Error("Failed to load diff image for focus mask."));
+                next.src = normalized;
+            });
+            const width = image.naturalWidth || image.width;
+            const height = image.naturalHeight || image.height;
+            const readCanvas = document.createElement("canvas");
+            readCanvas.width = width;
+            readCanvas.height = height;
+            const readCtx = readCanvas.getContext("2d");
+            if (!readCtx)
+                return "";
+            readCtx.drawImage(image, 0, 0);
+            const source = readCtx.getImageData(0, 0, width, height).data;
+            const maskCanvas = document.createElement("canvas");
+            maskCanvas.width = width;
+            maskCanvas.height = height;
+            const maskCtx = maskCanvas.getContext("2d");
+            if (!maskCtx)
+                return "";
+            const mask = maskCtx.createImageData(width, height);
+            for (let i = 0; i < source.length; i += 4) {
+                const r = source[i];
+                const g = source[i + 1];
+                const b = source[i + 2];
+                const a = source[i + 3];
+                const isDiffPixel = a > 0 && (Math.abs(r - g) > 28 || Math.abs(r - b) > 28 || Math.abs(g - b) > 28);
+                if (isDiffPixel) {
+                    mask.data[i + 3] = 0;
+                }
+                else {
+                    mask.data[i] = 0;
+                    mask.data[i + 1] = 0;
+                    mask.data[i + 2] = 0;
+                    mask.data[i + 3] = 170;
+                }
+            }
+            maskCtx.putImageData(mask, 0, 0);
+            const maskSrc = maskCanvas.toDataURL("image/png");
+            cache[normalized] = maskSrc;
+            return maskSrc;
+        }
+        if (!showDiff || !focusDiff || !selectedEntry?.diffImage) {
+            setFocusMaskSrc("");
+            return undefined;
+        }
+        buildFocusMask(selectedEntry.diffImage)
+            .then((src) => {
+            if (!cancelled) {
+                setFocusMaskSrc(src || "");
+            }
+        })
+            .catch(() => {
+            if (!cancelled) {
+                setFocusMaskSrc("");
+            }
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [showDiff, focusDiff, selectedEntry?.diffImage]);
+    const summary = React.useMemo(() => {
+        const next = {
+            total: storyGroups.length,
+            changed: 0,
+            unchanged: 0,
+            attention: 0,
+        };
+        for (const story of storyGroups) {
+            if (story.hasChanged)
+                next.changed += 1;
+            if (story.isUnchanged)
+                next.unchanged += 1;
+            if (story.hasAttention)
+                next.attention += 1;
+        }
+        return next;
+    }, [storyGroups]);
+    const summaryText = String(summary.total || 0) +
+        " stories · " +
+        String(summary.changed || 0) +
+        " changed · " +
+        String(summary.unchanged || 0) +
+        " unchanged · " +
+        String(summary.attention || 0) +
+        " attention";
+    const selectedIndex = selectedStory && visibleStories.length > 0
+        ? visibleStories.findIndex((story) => story.storyKey === selectedStory.storyKey)
+        : -1;
+    const metaText = selectedStory && selectedEntry && selectedIndex >= 0
+        ? "Story " +
+            String(selectedIndex + 1) +
+            "/" +
+            String(visibleStories.length) +
+            " · " +
+            (selectedEntry.browser ? selectedEntry.browser + " · " : "") +
+            selectedStory.storyKey
+        : "";
+    const metricsText = selectedEntry
+        ? "Mode: " +
+            (compareMode === "cross_browser" ? "cross-browser" : "baseline vs current") +
+            (compareMode === "cross_browser"
+                ? " · Matrix compares C↔F, C↔W, F↔W for all visible stories."
+                : " · Status: " +
+                    (statusMap[selectedEntry.status] || selectedEntry.status) +
+                    " · mismatch pixels: " +
+                    String(typeof selectedEntry.mismatchPixels === "number" ? selectedEntry.mismatchPixels : "n/a") +
+                    " · mismatch ratio: " +
+                    fmtPercent(selectedEntry.mismatchRatio) +
+                    " · size: " +
+                    String(selectedEntry.width && selectedEntry.height
+                        ? selectedEntry.width + "x" + selectedEntry.height
+                        : "n/a") +
+                    (selectedEntry.notes ? " · " + selectedEntry.notes : ""))
+        : allEntries.length === 0
+            ? "Run report command to generate report entries."
+            : "";
+    const diffReady = !!selectedEntry &&
+        !!selectedEntry.baselineImage &&
+        (showDiff ? !!selectedEntry.currentImage && !!selectedEntry.diffImage : true);
+    const diffBaseSrc = selectedEntry && selectedEntry.baselineImage
+        ? normalizeSrc(showDiff && zapDiff && zapShowCurrent && selectedEntry.currentImage
+            ? selectedEntry.currentImage
+            : selectedEntry.baselineImage)
+        : "";
+    const diffPixelsSrc = showDiff && selectedEntry?.diffImage ? normalizeSrc(selectedEntry.diffImage) : "";
+    const activeCrossPair = browserPairs.find((pair) => pair.id === activeCrossPairId) || browserPairs[0];
+    const activeCrossDiff = crossPairDiffs[activeCrossPair.id] || null;
+    const activeCrossLeftSrc = activeCrossDiff?.leftSrc || "";
+    const activeCrossRightSrc = activeCrossDiff?.rightSrc || "";
+    const emptyTitle = allEntries.length === 0
+        ? "No snapshot entries found in report"
+        : "No stories match the selected filter";
+    return (React.createElement("div", { className: "layout" },
+        React.createElement("aside", { className: "sidebar" },
+            React.createElement("h1", null, "UVA Visual Snapshots Report"),
+            React.createElement("p", { className: "summary", id: "summary" }, summaryText),
+            React.createElement("div", { className: "filters", id: "compare-mode" },
+                React.createElement("button", { type: "button", className: compareMode === "baseline_current" ? "filter active" : "filter", onClick: () => setCompareMode("baseline_current") }, "Baseline vs Current"),
+                React.createElement("button", { type: "button", className: compareMode === "cross_browser" ? "filter active" : "filter", onClick: () => setCompareMode("cross_browser") }, "Cross-browser")),
+            React.createElement("div", { className: "filters", id: "filters" }, filters.map((filter) => (React.createElement("button", { key: filter.id, type: "button", className: filter.id === activeFilter ? "filter active" : "filter", onClick: () => setActiveFilter(filter.id), "data-filter": filter.id }, filter.label)))),
+            React.createElement("div", { id: "list", className: "list" }, visibleStories.length === 0 ? (React.createElement("p", { className: "empty" }, "No stories match this filter.")) : (visibleStories.map((story) => (React.createElement("button", { key: story.storyKey, type: "button", className: story.storyKey === selectedStory?.storyKey ? "item active" : "item", "data-key": story.storyKey, onClick: () => setSelectedStoryKey(story.storyKey) },
+                React.createElement("span", { className: "item-head" },
+                    React.createElement("span", { className: "name" }, story.label),
+                    compareMode === "cross_browser" ? ((() => {
+                        const signal = crossStorySignals[story.storyKey] || { state: "na", worstRatio: null };
+                        const signalState = signal.state || "na";
+                        const signalLabel = signalState === "diff"
+                            ? `CB diff ${fmtPercent(signal.worstRatio)}`
+                            : signalState === "same"
+                                ? "CB same"
+                                : signalState === "size"
+                                    ? "CB size"
+                                    : signalState === "loading"
+                                        ? "CB ..."
+                                        : "CB n/a";
+                        const signalTitle = signalState === "diff"
+                            ? "Cross-browser diff detected"
+                            : signalState === "same"
+                                ? "No cross-browser diff detected"
+                                : signalState === "size"
+                                    ? "Cross-browser dimension mismatch"
+                                    : signalState === "loading"
+                                        ? "Computing cross-browser diff signal"
+                                        : "Cross-browser diff not available";
+                        return (React.createElement("span", { className: `cross-pill ${signalState}`, title: signalTitle }, signalLabel));
+                    })()) : null),
+                React.createElement("span", { className: "browser-health-row" }, story.browserHealth.map((health) => (React.createElement("span", { key: health.browser, className: health.hasCurrent ? "browser-health-chip" : "browser-health-chip muted", title: (browserLabel[health.browser] || health.browser) +
+                        " · " +
+                        (health.hasCurrent ? "current snapshot available" : "current snapshot missing") }, browserChipText(health.entry, health.browser))))),
+                React.createElement("span", { className: story.status === "unchanged" ? "badge ok" : "badge" }, story.status))))))),
+        React.createElement("main", { className: "main" },
+            React.createElement("div", { className: "title-row" },
+                React.createElement("div", null,
+                    React.createElement("h2", { id: "story-title" }, selectedStory ? selectedStory.label : emptyTitle),
+                    React.createElement("span", { className: "meta", id: "story-meta" }, metaText)),
+                compareMode === "baseline_current" && selectedStory && selectedStory.browsers.length > 0 ? (React.createElement("div", { className: "filters", id: "story-browser-filters" }, selectedStory.browsers.map((browser) => (React.createElement("button", { key: browser, type: "button", className: browser === activeStoryBrowser ? "filter active" : "filter", onClick: () => setActiveStoryBrowser(browser) }, browserLabel[browser] || browser))))) : null),
+            compareMode === "baseline_current" ? (React.createElement(React.Fragment, null,
+                React.createElement("section", { className: "images" },
+                    React.createElement("article", { className: "card" },
+                        React.createElement("h3", null, "Baseline"),
+                        React.createElement("div", { className: "viewport" }, selectedEntry?.baselineImage ? (React.createElement("img", { id: "baseline-img", alt: "Baseline snapshot", src: normalizeSrc(selectedEntry.baselineImage) })) : (React.createElement("p", { className: "empty", id: "baseline-empty" }, "No baseline image for this entry.")))),
+                    React.createElement("article", { className: "card" },
+                        React.createElement("h3", null, "Current"),
+                        React.createElement("div", { className: "viewport" }, selectedEntry?.currentImage ? (React.createElement("img", { id: "current-img", alt: "Current snapshot", src: normalizeSrc(selectedEntry.currentImage) })) : (React.createElement("p", { className: "empty", id: "current-empty" }, "No current image for this entry."))))),
+                React.createElement("section", { className: "diff" },
+                    React.createElement("div", { className: "diff-head" },
+                        React.createElement("h3", null, "Diff"),
+                        React.createElement("div", { className: "diff-controls" },
+                            React.createElement("button", { id: "btn-toggle-diff", className: "btn btn-primary", type: "button", "aria-pressed": showDiff ? "true" : "false", onClick: () => setShowDiff((prev) => !prev) }, "Show Diff Pixels"),
+                            showDiff ? (React.createElement("button", { id: "btn-focus-diff", className: "btn btn-primary", type: "button", "aria-pressed": focusDiff ? "true" : "false", onClick: () => setFocusDiff((prev) => !prev) }, "Focus Diff")) : null,
+                            showDiff ? (React.createElement("button", { id: "btn-zap-diff", className: "btn btn-primary", type: "button", "aria-pressed": zapDiff ? "true" : "false", onClick: () => setZapDiff((prev) => !prev) }, "Zap")) : null)),
+                    React.createElement("p", { className: "metrics", id: "metrics" }, metricsText),
+                    React.createElement("div", { className: "viewport" }, diffReady ? (React.createElement("div", { id: "diff-stage", className: "diff-stage" },
+                        React.createElement("img", { id: "diff-base-img", alt: "Baseline image in diff panel", src: diffBaseSrc }),
+                        showDiff && diffPixelsSrc ? (React.createElement("img", { id: "diff-pixels-img", className: "layer" + (zapDiff ? (zapShowCurrent ? " zap-red" : " zap-green") : ""), alt: "", "aria-hidden": "true", src: diffPixelsSrc })) : null,
+                        showDiff && focusDiff && focusMaskSrc ? (React.createElement("img", { id: "diff-focus-mask-img", className: "layer", alt: "", "aria-hidden": "true", src: focusMaskSrc })) : null)) : (React.createElement("p", { className: "empty", id: "diff-empty" }, showDiff
+                        ? "No generated diff image for this entry."
+                        : "No baseline image for this entry.")))))) : (React.createElement(React.Fragment, null,
+                React.createElement("section", { className: "images" },
+                    React.createElement("article", { className: "card" },
+                        React.createElement("h3", null, browserLabel[activeCrossPair.left] || activeCrossPair.left),
+                        React.createElement("div", { className: "viewport" }, activeCrossLeftSrc ? (React.createElement("img", { alt: `${browserLabel[activeCrossPair.left] || activeCrossPair.left} snapshot`, src: activeCrossLeftSrc })) : (React.createElement("p", { className: "empty" }, "No current image for this browser.")))),
+                    React.createElement("article", { className: "card" },
+                        React.createElement("h3", null, browserLabel[activeCrossPair.right] || activeCrossPair.right),
+                        React.createElement("div", { className: "viewport" }, activeCrossRightSrc ? (React.createElement("img", { alt: `${browserLabel[activeCrossPair.right] || activeCrossPair.right} snapshot`, src: activeCrossRightSrc })) : (React.createElement("p", { className: "empty" }, "No current image for this browser."))))),
+                React.createElement("section", { className: "diff" },
+                    React.createElement("div", { className: "diff-head" },
+                        React.createElement("h3", null, "Cross-browser Diff"),
+                        React.createElement("div", { className: "diff-controls" },
+                            browserPairs.map((pair) => {
+                                const pairDiff = crossPairDiffs[pair.id];
+                                const label = pairDiff?.status === "ready"
+                                    ? `${pair.label} ${fmtPercent(pairDiff.mismatchRatio)}`
+                                    : pair.label;
+                                return (React.createElement("button", { key: pair.id, type: "button", className: pair.id === activeCrossPair.id ? "filter active" : "filter", onClick: () => {
+                                        setActiveCrossPairId(pair.id);
+                                        setCrossInterpolate(false);
+                                    } }, label));
+                            }),
+                            React.createElement("button", { type: "button", className: "btn btn-primary", "aria-pressed": crossInterpolate ? "true" : "false", onClick: () => setCrossInterpolate((prev) => !prev) }, crossInterpolate ? "Interpolation On" : "Interpolation Off"))),
+                    React.createElement("p", { className: "metrics" }, crossPairDiffsLoading
+                        ? "Computing selected story cross-browser diffs..."
+                        : activeCrossDiff?.status === "ready"
+                            ? `${activeCrossPair.label} · mismatch pixels: ${String(activeCrossDiff.mismatchPixels)} · mismatch ratio: ${fmtPercent(activeCrossDiff.mismatchRatio)}`
+                            : activeCrossDiff?.status === "dimension_mismatch"
+                                ? `${activeCrossPair.label} · size mismatch: ${activeCrossDiff.message || "n/a"}`
+                                : `No comparable snapshots for ${activeCrossPair.label}.`),
+                    React.createElement("div", { className: "viewport" }, activeCrossDiff?.status === "ready" && activeCrossDiff.leftSrc ? (React.createElement("div", { id: "cross-diff-stage", className: "diff-stage" },
+                        React.createElement("img", { id: "cross-diff-base-img", alt: `${activeCrossPair.label} base image`, src: activeCrossDiff.leftSrc }),
+                        activeCrossDiff.overlaySrc ? (React.createElement("img", { id: "cross-diff-overlay-img", className: "layer", alt: "", "aria-hidden": "true", src: activeCrossDiff.overlaySrc })) : null)) : (React.createElement("p", { className: "empty" }, "No generated cross-browser diff image for this pair.")))))))));
+}
+async function bootstrap() {
+    try {
+        const [reactMod, reactDomMod] = await Promise.all([
+            import("https://esm.sh/react@18.3.1"),
+            import("https://esm.sh/react-dom@18.3.1/client"),
+        ]);
+        React = reactMod.default || reactMod;
+        createRoot = reactDomMod.createRoot;
+    }
+    catch (error) {
+        renderBootstrapError(error);
+        return;
+    }
+    if (rootNode) {
+        createRoot(rootNode).render(React.createElement(App, null));
+    }
+}
+void bootstrap();
+
+</script>
+  </body>
+</html>
