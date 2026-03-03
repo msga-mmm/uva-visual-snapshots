@@ -1,9 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/html";
-import { createButton } from "./button";
+import React from "react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Button } from "./button";
 import "./styles.css";
 
-const meta: Meta = {
+const meta: Meta<typeof Button> = {
   title: "Components/Button",
+  component: Button,
   tags: ["autodocs"],
   argTypes: {
     variant: {
@@ -14,11 +16,10 @@ const meta: Meta = {
       control: { type: "boolean" },
     },
   },
-  render: (args) => createButton(args),
 };
 
 export default meta;
-type Story = StoryObj;
+type Story = StoryObj<typeof Button>;
 
 export const Primary: Story = {
   args: {

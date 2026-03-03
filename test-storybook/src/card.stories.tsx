@@ -1,37 +1,35 @@
-import type { Meta, StoryObj } from "@storybook/html";
+import React from "react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import "./styles.css";
 
-type CardArgs = {
+type CardProps = {
   title: string;
   body: string;
   highlighted: boolean;
 };
 
-const meta: Meta<CardArgs> = {
+function Card({ title, body, highlighted }: CardProps): JSX.Element {
+  return (
+    <article className={`card${highlighted ? " card-highlighted" : ""}`}>
+      <h3>{title}</h3>
+      <p>{body}</p>
+    </article>
+  );
+}
+
+const meta: Meta<typeof Card> = {
   title: "Components/Card",
+  component: Card,
   tags: ["autodocs"],
   argTypes: {
     highlighted: {
       control: { type: "boolean" },
     },
   },
-  render: ({ title, body, highlighted }) => {
-    const container = document.createElement("article");
-    container.className = `card${highlighted ? " card-highlighted" : ""}`;
-
-    const heading = document.createElement("h3");
-    heading.textContent = title;
-
-    const paragraph = document.createElement("p");
-    paragraph.textContent = body;
-
-    container.append(heading, paragraph);
-    return container;
-  },
 };
 
 export default meta;
-type Story = StoryObj<CardArgs>;
+type Story = StoryObj<typeof Card>;
 
 export const Default: Story = {
   args: {
