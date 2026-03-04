@@ -46,8 +46,12 @@ uva-visual-snapshots baseline \
   --current .uva-visual-snapshots/current \
   --baseline .uva-visual-snapshots/baseline \
   --browser chromium \
+  --browser firefox \
+  --browser webkit \
   --width 1280 \
   --height 720 \
+  --story-concurrency 4 \
+  --browser-concurrency 3 \
   --target-selector "#storybook-root, #root" \
   --story button--primary card--default \
   --full-page
@@ -62,15 +66,21 @@ uva-visual-snapshots report \
   --baseline .uva-visual-snapshots/baseline \
   --report .uva-visual-snapshots/report \
   --browser chromium \
+  --browser firefox \
+  --browser webkit \
   --width 1280 \
   --height 720 \
+  --story-concurrency 4 \
+  --browser-concurrency 3 \
   --target-selector "#storybook-root, #root" \
   --diff-ratio-threshold 0 \
   --pixel-threshold 0.1 \
   --port 4400
 ```
 
-`--browser` supports `chromium` (default), `firefox`, and `webkit` (Safari engine).
+`--browser` supports `chromium` (default), `firefox`, and `webkit` (Safari engine). Repeat `--browser` to capture multiple browsers in one run. When multiple browsers are provided, snapshots are written under browser subdirectories (for example `current/chromium/...`).
+
+Viewport is resolved per story from Storybook viewport metadata when available (for example `parameters.viewport.defaultViewport` / globals). Snapshots are grouped under viewport subdirectories (for example `current/chromium/mobile/...`) so cross-browser comparisons match the same story+viewport.
 
 Captures freeze motion by default (`reducedMotion: reduce` plus Playwright screenshot animation disabling) to keep animated stories deterministic in CI. Use `--no-freeze-animations` only when you explicitly need live animation frames.
 
@@ -96,5 +106,7 @@ Workflow file: `.github/workflows/branch-visual-diff.yml`
 
 - Baseline snapshots are captured from one branch (`baseline_branch`, default: `main`)
 - Report/diff snapshots are captured from another branch (`report_branch`, default: current runner branch)
+- Chromium, Firefox, and WebKit are captured in a single workflow job and merged into one report
 - The generated report is uploaded as a workflow artifact: `visual-diff-report`
+- The report UI includes browser chips/tabs to switch between browser-specific results
 - Capture orchestration is centralized in `scripts/ci-capture.sh` to keep workflow YAML minimal.

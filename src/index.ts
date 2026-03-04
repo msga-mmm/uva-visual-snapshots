@@ -3,6 +3,7 @@ export { compareSnapshots } from "./compare.js";
 export { updateBaseline } from "./baseline.js";
 export { serveReport } from "./server.js";
 export type {
+  BrowserName,
   CaptureOptions,
   CompareEntry,
   CompareOptions,
