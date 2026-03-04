@@ -1,3 +1,5 @@
+export type BrowserName = "chromium" | "firefox" | "webkit";
+
 export interface StoryEntry {
   id: string;
   title: string;
@@ -6,6 +8,10 @@ export interface StoryEntry {
 
 export interface SnapshotRecord extends StoryEntry {
   fileName: string;
+  browser?: BrowserName;
+  viewportLabel?: string;
+  viewportWidth?: number;
+  viewportHeight?: number;
   status: "ok" | "failed";
   error?: string;
 }
@@ -23,12 +29,15 @@ export interface SnapshotManifest {
 export interface CaptureOptions {
   storybookUrl: string;
   outputDir: string;
-  browser: "chromium" | "firefox" | "webkit";
+  browser: BrowserName;
+  browsers?: BrowserName[];
   width: number;
   height: number;
   headless: boolean;
   fullPage: boolean;
   freezeAnimations?: boolean;
+  storyConcurrency?: number;
+  browserConcurrency?: number;
   targetSelector: string;
   storyIds?: string[];
 }
@@ -43,6 +52,8 @@ export type DiffStatus =
 
 export interface CompareEntry {
   key: string;
+  snapshotKey?: string;
+  browser?: BrowserName;
   storyId?: string;
   title?: string;
   name?: string;

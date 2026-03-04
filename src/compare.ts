@@ -5,6 +5,7 @@ import { PNG } from "pngjs";
 import { ensureDir, fileExists, readJsonIfExists, toPosixPath, walkFiles } from "./fs-utils.js";
 import { writeReportHtml } from "./report-ui.js";
 import type {
+  BrowserName,
   CompareEntry,
   CompareOptions,
   CompareReportData,
@@ -16,6 +17,11 @@ interface StoryMeta {
   id?: string;
   title?: string;
   name?: string;
+}
+
+interface SnapshotKeyMeta {
+  browser?: BrowserName;
+  snapshotKey: string;
 }
 
 function createEmptySummary(total: number): CompareSummary {
@@ -45,6 +51,19 @@ function buildStoryMetaMap(manifest: SnapshotManifest | null): Map<string, Story
   }
 
   return map;
+}
+
+function parseSnapshotKey(key: string): SnapshotKeyMeta {
+  const normalized = key.replace(/\\/g, "/");
+  const browserMatch = normalized.match(/^(chromium|firefox|webkit)\/(.+)$/);
+  if (browserMatch) {
+    return {
+      browser: browserMatch[1] as SnapshotKeyMeta["browser"],
+      snapshotKey: browserMatch[2],
+    };
+  }
+
+  return { snapshotKey: normalized };
 }
 
 async function collectPngFilesByRelativePath(dir: string): Promise<Map<string, string>> {
@@ -140,12 +159,15 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
     const baselinePath = baselineFiles.get(key);
     const currentPath = currentFiles.get(key);
     const meta = currentMeta.get(key) ?? baselineMeta.get(key);
+    const keyMeta = parseSnapshotKey(key);
 
     if (!baselinePath && currentPath) {
       const currentImage = await copyAsset(options.reportDir, "current", key, currentPath);
       pushChangedEntry(
         {
           key,
+          snapshotKey: keyMeta.snapshotKey,
+          browser: keyMeta.browser,
           storyId: meta?.id,
           title: meta?.title,
           name: meta?.name,
@@ -164,6 +186,8 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
       pushChangedEntry(
         {
           key,
+          snapshotKey: keyMeta.snapshotKey,
+          browser: keyMeta.browser,
           storyId: meta?.id,
           title: meta?.title,
           name: meta?.name,
@@ -192,6 +216,8 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
         pushChangedEntry(
           {
             key,
+            snapshotKey: keyMeta.snapshotKey,
+            browser: keyMeta.browser,
             storyId: meta?.id,
             title: meta?.title,
             name: meta?.name,
@@ -226,6 +252,8 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
         pushChangedEntry(
           {
             key,
+            snapshotKey: keyMeta.snapshotKey,
+            browser: keyMeta.browser,
             storyId: meta?.id,
             title: meta?.title,
             name: meta?.name,
@@ -244,6 +272,8 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
       } else {
         entries.push({
           key,
+          snapshotKey: keyMeta.snapshotKey,
+          browser: keyMeta.browser,
           storyId: meta?.id,
           title: meta?.title,
           name: meta?.name,
@@ -265,6 +295,8 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
       pushChangedEntry(
         {
           key,
+          snapshotKey: keyMeta.snapshotKey,
+          browser: keyMeta.browser,
           storyId: meta?.id,
           title: meta?.title,
           name: meta?.name,

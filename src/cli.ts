@@ -5,6 +5,7 @@ import { updateBaseline } from "./baseline.js";
 import { captureSnapshots } from "./capture.js";
 import { compareSnapshots } from "./compare.js";
 import { serveReport } from "./server.js";
+import type { BrowserName } from "./types.js";
 
 function toNumber(value: string, label: string): number {
   const parsed = Number(value);
@@ -14,7 +15,7 @@ function toNumber(value: string, label: string): number {
   return parsed;
 }
 
-function toBrowser(value: string): "chromium" | "firefox" | "webkit" {
+function toBrowser(value: string): BrowserName {
   const normalized = value.toLowerCase();
   if (normalized !== "chromium" && normalized !== "firefox" && normalized !== "webkit") {
     throw new Error(`Invalid browser: ${value}. Expected chromium, firefox, or webkit.`);
@@ -22,17 +23,27 @@ function toBrowser(value: string): "chromium" | "firefox" | "webkit" {
   return normalized;
 }
 
+function toBrowsers(values: string[]): BrowserName[] {
+  if (values.length === 0) {
+    return ["chromium"];
+  }
+
+  return values.map(toBrowser);
+}
+
 interface BaselineCliOptions {
   storybookUrl: string;
   current: string;
   baseline: string;
-  browser: "chromium" | "firefox" | "webkit";
+  browser: string[];
   width: string;
   height: string;
   targetSelector: string;
   story?: string[];
   fullPage?: boolean;
   freezeAnimations: boolean;
+  storyConcurrency: string;
+  browserConcurrency: string;
   headed?: boolean;
 }
 
@@ -41,13 +52,15 @@ interface ReportCliOptions {
   current: string;
   baseline: string;
   report: string;
-  browser: "chromium" | "firefox" | "webkit";
+  browser: string[];
   width: string;
   height: string;
   targetSelector: string;
   story?: string[];
   fullPage?: boolean;
   freezeAnimations: boolean;
+  storyConcurrency: string;
+  browserConcurrency: string;
   headed?: boolean;
   diffRatioThreshold: string;
   pixelThreshold: string;
@@ -73,13 +86,16 @@ async function main(): Promise<void> {
     .option("--baseline <dir>", "Baseline snapshots directory", ".uva-visual-snapshots/baseline")
     .option(
       "--browser <name>",
-      "Browser engine: chromium, firefox, or webkit (Safari engine)",
-      "chromium",
+      "Browser engine (repeat option for multiple): chromium, firefox, or webkit (Safari engine)",
+      (value: string, previous: string[]) => [...previous, value],
+      [],
     )
     .option("--width <px>", "Viewport width", "1280")
     .option("--height <px>", "Viewport height", "720")
     .option("--target-selector <selector>", "Root selector to screenshot", "#storybook-root, #root")
     .option("--story <id...>", "Specific Storybook story IDs to capture")
+    .option("--story-concurrency <number>", "Parallel stories per browser", "4")
+    .option("--browser-concurrency <number>", "Parallel browser engines", "3")
     .option("--full-page", "Capture full page screenshot", false)
     .option(
       "--no-freeze-animations",
@@ -89,16 +105,20 @@ async function main(): Promise<void> {
     .action(async (options: BaselineCliOptions) => {
       const currentDir = path.resolve(options.current);
       const baselineDir = path.resolve(options.baseline);
+      const browsers = toBrowsers(options.browser);
 
       const manifest = await captureSnapshots({
         storybookUrl: options.storybookUrl,
         outputDir: currentDir,
-        browser: toBrowser(options.browser),
+        browser: browsers[0],
+        browsers,
         width: toNumber(options.width, "width"),
         height: toNumber(options.height, "height"),
         headless: !options.headed,
         fullPage: Boolean(options.fullPage),
         freezeAnimations: options.freezeAnimations,
+        storyConcurrency: toNumber(options.storyConcurrency, "story-concurrency"),
+        browserConcurrency: toNumber(options.browserConcurrency, "browser-concurrency"),
         targetSelector: options.targetSelector,
         storyIds: options.story,
       });
@@ -122,13 +142,16 @@ async function main(): Promise<void> {
     .option("--report <dir>", "Output report directory", ".uva-visual-snapshots/report")
     .option(
       "--browser <name>",
-      "Browser engine: chromium, firefox, or webkit (Safari engine)",
-      "chromium",
+      "Browser engine (repeat option for multiple): chromium, firefox, or webkit (Safari engine)",
+      (value: string, previous: string[]) => [...previous, value],
+      [],
     )
     .option("--width <px>", "Viewport width", "1280")
     .option("--height <px>", "Viewport height", "720")
     .option("--target-selector <selector>", "Root selector to screenshot", "#storybook-root, #root")
     .option("--story <id...>", "Specific Storybook story IDs to capture")
+    .option("--story-concurrency <number>", "Parallel stories per browser", "4")
+    .option("--browser-concurrency <number>", "Parallel browser engines", "3")
     .option("--full-page", "Capture full page screenshot", false)
     .option(
       "--no-freeze-animations",
@@ -143,16 +166,20 @@ async function main(): Promise<void> {
       const currentDir = path.resolve(options.current);
       const baselineDir = path.resolve(options.baseline);
       const reportDir = path.resolve(options.report);
+      const browsers = toBrowsers(options.browser);
 
       const manifest = await captureSnapshots({
         storybookUrl: options.storybookUrl,
         outputDir: currentDir,
-        browser: toBrowser(options.browser),
+        browser: browsers[0],
+        browsers,
         width: toNumber(options.width, "width"),
         height: toNumber(options.height, "height"),
         headless: !options.headed,
         fullPage: Boolean(options.fullPage),
         freezeAnimations: options.freezeAnimations,
+        storyConcurrency: toNumber(options.storyConcurrency, "story-concurrency"),
+        browserConcurrency: toNumber(options.browserConcurrency, "browser-concurrency"),
         targetSelector: options.targetSelector,
         storyIds: options.story,
       });
