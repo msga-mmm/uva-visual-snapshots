@@ -64,54 +64,63 @@ export default function Sidebar({
             >
               <span className="item-head">
                 <span className="name">{story.label}</span>
-                {compareMode === "cross_browser" ? (
-                  (() => {
-                    const signal = crossStorySignals[story.storyKey] || { state: "na", worstRatio: null };
-                    const signalState = signal.state || "na";
-                    const signalLabel =
-                      signalState === "diff"
-                        ? `CB diff ${fmtPercent(signal.worstRatio)}`
-                        : signalState === "same"
-                          ? "CB same"
-                          : signalState === "size"
-                            ? "CB size"
-                            : signalState === "loading"
-                              ? "CB ..."
-                              : "CB n/a";
-                    const signalTitle =
-                      signalState === "diff"
-                        ? "Cross-browser diff detected"
-                        : signalState === "same"
-                          ? "No cross-browser diff detected"
-                          : signalState === "size"
-                            ? "Cross-browser dimension mismatch"
-                            : signalState === "loading"
-                              ? "Computing cross-browser diff signal"
-                              : "Cross-browser diff not available";
-                    return (
-                      <span className={`cross-pill ${signalState}`} title={signalTitle}>
-                        {signalLabel}
-                      </span>
-                    );
-                  })()
-                ) : null}
+                {compareMode === "cross_browser"
+                  ? (() => {
+                      const signal = crossStorySignals[story.storyKey] || {
+                        state: "na",
+                        worstRatio: null,
+                      };
+                      const signalState = signal.state || "na";
+                      const signalLabel =
+                        signalState === "diff"
+                          ? `CB diff ${fmtPercent(signal.worstRatio)}`
+                          : signalState === "same"
+                            ? "CB same"
+                            : signalState === "size"
+                              ? "CB size"
+                              : signalState === "loading"
+                                ? "CB ..."
+                                : "CB n/a";
+                      const signalTitle =
+                        signalState === "diff"
+                          ? "Cross-browser diff detected"
+                          : signalState === "same"
+                            ? "No cross-browser diff detected"
+                            : signalState === "size"
+                              ? "Cross-browser dimension mismatch"
+                              : signalState === "loading"
+                                ? "Computing cross-browser diff signal"
+                                : "Cross-browser diff not available";
+                      return (
+                        <span className={`cross-pill ${signalState}`} title={signalTitle}>
+                          {signalLabel}
+                        </span>
+                      );
+                    })()
+                  : null}
               </span>
               <span className="browser-health-row">
                 {story.browserHealth.map((health) => (
                   <span
                     key={health.browser}
-                    className={health.hasCurrent ? "browser-health-chip" : "browser-health-chip muted"}
+                    className={
+                      health.hasCurrent ? "browser-health-chip" : "browser-health-chip muted"
+                    }
                     title={
                       (browserLabel[health.browser] || health.browser) +
                       " · " +
-                      (health.hasCurrent ? "current snapshot available" : "current snapshot missing")
+                      (health.hasCurrent
+                        ? "current snapshot available"
+                        : "current snapshot missing")
                     }
                   >
                     <BrowserChipContent entry={health.entry} browser={health.browser} />
                   </span>
                 ))}
               </span>
-              <span className={story.status === "unchanged" ? "badge ok" : "badge"}>{story.status}</span>
+              <span className={story.status === "unchanged" ? "badge ok" : "badge"}>
+                {story.status}
+              </span>
             </button>
           ))
         )}

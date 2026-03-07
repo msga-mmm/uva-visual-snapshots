@@ -1,4 +1,19 @@
-export const emptyReport = {
+import type {
+  BrowserId,
+  BrowserPair,
+  FilterId,
+  ReportData,
+  ReportEntry,
+  ReportStatus,
+} from "./types.js";
+
+interface ReportFilter {
+  id: FilterId;
+  label: string;
+  include: (entry: ReportEntry) => boolean;
+}
+
+export const emptyReport: ReportData = {
   summary: {
     total: 0,
     changed: 0,
@@ -11,7 +26,7 @@ export const emptyReport = {
   entries: [],
 };
 
-export const statusMap = {
+export const statusMap: Record<ReportStatus, string> = {
   changed: "changed",
   unchanged: "unchanged",
   missing_baseline: "missing baseline",
@@ -20,7 +35,7 @@ export const statusMap = {
   error: "error",
 };
 
-export const filters = [
+export const filters: ReportFilter[] = [
   { id: "all", label: "All", include: () => true },
   { id: "changed", label: "Changed", include: (entry) => entry.status === "changed" },
   { id: "unchanged", label: "Unchanged", include: (entry) => entry.status === "unchanged" },
@@ -35,22 +50,22 @@ export const filters = [
   },
 ];
 
-export const browserOrder = ["chromium", "firefox", "webkit"];
+export const browserOrder: BrowserId[] = ["chromium", "firefox", "webkit"];
 
-export const browserLabel = {
+export const browserLabel: Record<BrowserId, string> = {
   chromium: "Chromium",
   firefox: "Firefox",
   webkit: "WebKit",
 };
 
-export const attentionStatuses = new Set([
+export const attentionStatuses = new Set<string>([
   "missing_baseline",
   "missing_current",
   "dimension_mismatch",
   "error",
 ]);
 
-export const browserPairs = [
+export const browserPairs: BrowserPair[] = [
   { id: "cf", left: "chromium", right: "firefox" },
   { id: "cw", left: "chromium", right: "webkit" },
   { id: "fw", left: "firefox", right: "webkit" },

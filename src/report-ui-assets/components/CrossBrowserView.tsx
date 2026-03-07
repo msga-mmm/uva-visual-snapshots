@@ -21,7 +21,10 @@ export default function CrossBrowserView({
           <h3>{browserLabel[activeCrossPair.left] || activeCrossPair.left}</h3>
           <div className="viewport">
             {activeCrossLeftSrc ? (
-              <img alt={`${browserLabel[activeCrossPair.left] || activeCrossPair.left} snapshot`} src={activeCrossLeftSrc} />
+              <img
+                alt={`${browserLabel[activeCrossPair.left] || activeCrossPair.left} snapshot`}
+                src={activeCrossLeftSrc}
+              />
             ) : (
               <p className="empty">No current image for this browser.</p>
             )}
@@ -53,7 +56,11 @@ export default function CrossBrowserView({
                 <button
                   key={pair.id}
                   type="button"
-                  className={pair.id === activeCrossPairId ? "filter active pair-filter" : "filter pair-filter"}
+                  className={
+                    pair.id === activeCrossPairId
+                      ? "filter active pair-filter"
+                      : "filter pair-filter"
+                  }
                   onClick={() => setActiveCrossPairId(pair.id)}
                 >
                   <span className="pair-label">
