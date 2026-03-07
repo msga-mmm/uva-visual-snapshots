@@ -1,16 +1,8 @@
-import type {
-  BrowserId,
-  BrowserPair,
-  FilterId,
-  ReportData,
-  ReportEntry,
-  ReportStatus,
-} from "./types.js";
+import type { BrowserId, BrowserPair, FilterId, ReportData, ReportStatus } from "./types.js";
 
 interface ReportFilter {
   id: FilterId;
   label: string;
-  include: (entry: ReportEntry) => boolean;
 }
 
 export const emptyReport: ReportData = {
@@ -36,18 +28,10 @@ export const statusMap: Record<ReportStatus, string> = {
 };
 
 export const filters: ReportFilter[] = [
-  { id: "all", label: "All", include: () => true },
-  { id: "changed", label: "Changed", include: (entry) => entry.status === "changed" },
-  { id: "unchanged", label: "Unchanged", include: (entry) => entry.status === "unchanged" },
-  {
-    id: "attention",
-    label: "Attention",
-    include: (entry) =>
-      entry.status === "missing_baseline" ||
-      entry.status === "missing_current" ||
-      entry.status === "dimension_mismatch" ||
-      entry.status === "error",
-  },
+  { id: "all", label: "All" },
+  { id: "changed", label: "Changed" },
+  { id: "unchanged", label: "Unchanged" },
+  { id: "attention", label: "Attention" },
 ];
 
 export const browserOrder: BrowserId[] = ["chromium", "firefox", "webkit"];

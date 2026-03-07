@@ -24,6 +24,15 @@ interface SnapshotKeyMeta {
   snapshotKey: string;
 }
 
+interface EntryContext {
+  key: string;
+  snapshotKey: string;
+  browser?: BrowserName;
+  storyId?: string;
+  title?: string;
+  name?: string;
+}
+
 function createEmptySummary(total: number): CompareSummary {
   return {
     total,
@@ -99,30 +108,29 @@ async function writeDiffAsset(reportDir: string, key: string, png: PNG): Promise
   return relative;
 }
 
-function pushChangedEntry(
-  entry: CompareEntry,
-  entries: CompareEntry[],
-  summary: CompareSummary,
-): void {
-  entries.push(entry);
-  summary.changed += 1;
+const summaryFieldByStatus = {
+  changed: "changed",
+  unchanged: "unchanged",
+  missing_baseline: "missingBaseline",
+  missing_current: "missingCurrent",
+  dimension_mismatch: "dimensionMismatch",
+  error: "errors",
+} satisfies Record<CompareEntry["status"], keyof CompareSummary>;
 
-  switch (entry.status) {
-    case "missing_baseline":
-      summary.missingBaseline += 1;
-      break;
-    case "missing_current":
-      summary.missingCurrent += 1;
-      break;
-    case "dimension_mismatch":
-      summary.dimensionMismatch += 1;
-      break;
-    case "error":
-      summary.errors += 1;
-      break;
-    default:
-      break;
-  }
+function createEntryContext(key: string, keyMeta: SnapshotKeyMeta, meta?: StoryMeta): EntryContext {
+  return {
+    key,
+    snapshotKey: keyMeta.snapshotKey,
+    browser: keyMeta.browser,
+    storyId: meta?.id,
+    title: meta?.title,
+    name: meta?.name,
+  };
+}
+
+function pushEntry(entry: CompareEntry, entries: CompareEntry[], summary: CompareSummary): void {
+  entries.push(entry);
+  summary[summaryFieldByStatus[entry.status]] += 1;
 }
 
 export async function compareSnapshots(options: CompareOptions): Promise<CompareReportData> {
@@ -160,17 +168,13 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
     const currentPath = currentFiles.get(key);
     const meta = currentMeta.get(key) ?? baselineMeta.get(key);
     const keyMeta = parseSnapshotKey(key);
+    const entryContext = createEntryContext(key, keyMeta, meta);
 
     if (!baselinePath && currentPath) {
       const currentImage = await copyAsset(options.reportDir, "current", key, currentPath);
-      pushChangedEntry(
+      pushEntry(
         {
-          key,
-          snapshotKey: keyMeta.snapshotKey,
-          browser: keyMeta.browser,
-          storyId: meta?.id,
-          title: meta?.title,
-          name: meta?.name,
+          ...entryContext,
           status: "missing_baseline",
           currentImage,
           notes: "Present in current run but missing in baseline.",
@@ -183,14 +187,9 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
 
     if (baselinePath && !currentPath) {
       const baselineImage = await copyAsset(options.reportDir, "baseline", key, baselinePath);
-      pushChangedEntry(
+      pushEntry(
         {
-          key,
-          snapshotKey: keyMeta.snapshotKey,
-          browser: keyMeta.browser,
-          storyId: meta?.id,
-          title: meta?.title,
-          name: meta?.name,
+          ...entryContext,
           status: "missing_current",
           baselineImage,
           notes: "Present in baseline but missing in current run.",
@@ -213,14 +212,9 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
       const currentImage = await copyAsset(options.reportDir, "current", key, currentPath);
 
       if (baselinePng.width !== currentPng.width || baselinePng.height !== currentPng.height) {
-        pushChangedEntry(
+        pushEntry(
           {
-            key,
-            snapshotKey: keyMeta.snapshotKey,
-            browser: keyMeta.browser,
-            storyId: meta?.id,
-            title: meta?.title,
-            name: meta?.name,
+            ...entryContext,
             status: "dimension_mismatch",
             baselineImage,
             currentImage,
@@ -249,14 +243,9 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
 
       if (mismatchRatio > options.diffRatioThreshold) {
         const diffImage = await writeDiffAsset(options.reportDir, key, diffPng);
-        pushChangedEntry(
+        pushEntry(
           {
-            key,
-            snapshotKey: keyMeta.snapshotKey,
-            browser: keyMeta.browser,
-            storyId: meta?.id,
-            title: meta?.title,
-            name: meta?.name,
+            ...entryContext,
             status: "changed",
             baselineImage,
             currentImage,
@@ -270,36 +259,29 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
           summary,
         );
       } else {
-        entries.push({
-          key,
-          snapshotKey: keyMeta.snapshotKey,
-          browser: keyMeta.browser,
-          storyId: meta?.id,
-          title: meta?.title,
-          name: meta?.name,
-          status: "unchanged",
-          baselineImage,
-          currentImage,
-          width: baselinePng.width,
-          height: baselinePng.height,
-          mismatchPixels,
-          mismatchRatio,
-        });
-        summary.unchanged += 1;
+        pushEntry(
+          {
+            ...entryContext,
+            status: "unchanged",
+            baselineImage,
+            currentImage,
+            width: baselinePng.width,
+            height: baselinePng.height,
+            mismatchPixels,
+            mismatchRatio,
+          },
+          entries,
+          summary,
+        );
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       const baselineImage = await copyAsset(options.reportDir, "baseline", key, baselinePath);
       const currentImage = await copyAsset(options.reportDir, "current", key, currentPath);
 
-      pushChangedEntry(
+      pushEntry(
         {
-          key,
-          snapshotKey: keyMeta.snapshotKey,
-          browser: keyMeta.browser,
-          storyId: meta?.id,
-          title: meta?.title,
-          name: meta?.name,
+          ...entryContext,
           status: "error",
           baselineImage,
           currentImage,
