@@ -10,12 +10,7 @@ export type StoryStatus = "changed" | "unchanged" | "attention";
 
 export type FilterId = "all" | "changed" | "unchanged" | "attention";
 
-export type BrowserId =
-  | "chromium"
-  | "firefox"
-  | "webkit"
-  | "google-chrome"
-  | "microsoft-edge";
+export type BrowserId = "chromium" | "firefox" | "webkit" | "google-chrome" | "microsoft-edge";
 
 export type CompareMode = "baseline_current" | "cross_browser";
 

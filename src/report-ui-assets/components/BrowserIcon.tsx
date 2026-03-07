@@ -1,11 +1,6 @@
 import React from "react";
 import "./BrowserIcon.css";
-import {
-  SiFirefoxbrowser,
-  SiGooglechrome,
-  SiMicrosoftedge,
-  SiSafari,
-} from "react-icons/si";
+import { SiFirefoxbrowser, SiGooglechrome, SiMicrosoftedge, SiSafari } from "react-icons/si";
 
 const browserIconMap = new Map([
   ["chromium", SiGooglechrome],
