@@ -1,13 +1,13 @@
 import React from "react";
 import "./BrowserIcon.css";
-import { SiFirefoxbrowser, SiGooglechrome, SiMicrosoftedge, SiSafari } from "react-icons/si";
+import { FaChrome, FaEdge, FaFirefoxBrowser, FaSafari } from "react-icons/fa";
 
 const browserIconMap = new Map([
-  ["chromium", SiGooglechrome],
-  ["google-chrome", SiGooglechrome],
-  ["microsoft-edge", SiMicrosoftedge],
-  ["firefox", SiFirefoxbrowser],
-  ["webkit", SiSafari],
+  ["chromium", FaChrome],
+  ["google-chrome", FaChrome],
+  ["microsoft-edge", FaEdge],
+  ["firefox", FaFirefoxBrowser],
+  ["webkit", FaSafari],
 ]);
 
 export function BrowserIcon({ browser }) {
