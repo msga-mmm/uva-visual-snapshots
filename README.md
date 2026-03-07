@@ -78,7 +78,7 @@ uva-visual-snapshots report \
   --port 4400
 ```
 
-`--browser` supports `chromium` (default), `firefox`, and `webkit` (Safari engine). Repeat `--browser` to capture multiple browsers in one run. When multiple browsers are provided, snapshots are written under browser subdirectories (for example `current/chromium/...`).
+`--browser` supports `chromium` (default), `google-chrome`, `microsoft-edge`, `firefox`, and `webkit` (Safari engine). `google-chrome` and `microsoft-edge` use the Chromium Playwright engine but keep separate output directories and report labels. Repeat `--browser` to capture multiple browsers in one run. When multiple browsers are provided, snapshots are written under browser subdirectories (for example `current/chromium/...`).
 
 Viewport is resolved per story from Storybook viewport metadata when available (for example `parameters.viewport.defaultViewport` / globals). Snapshots are grouped under viewport subdirectories (for example `current/chromium/mobile/...`) so cross-browser comparisons match the same story+viewport.
 

@@ -349,7 +349,13 @@ async function captureStoriesForBrowser(
 ): Promise<SnapshotRecord[]> {
   const freezeAnimations = options.freezeAnimations ?? true;
   const storyConcurrency = Math.min(stories.length, asPositiveInteger(options.storyConcurrency, 4));
-  const browserTypeMap = { chromium, firefox, webkit };
+  const browserTypeMap = {
+    chromium,
+    firefox,
+    webkit,
+    "google-chrome": chromium,
+    "microsoft-edge": chromium,
+  } satisfies Record<BrowserName, typeof chromium>;
   const browser = await browserTypeMap[browserName].launch({ headless: options.headless });
   const records: Array<SnapshotRecord | null> = Array.from({ length: stories.length }, () => null);
   let nextStoryIndex = 0;

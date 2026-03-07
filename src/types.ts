@@ -1,4 +1,9 @@
-export type BrowserName = "chromium" | "firefox" | "webkit";
+export type BrowserName =
+  | "chromium"
+  | "firefox"
+  | "webkit"
+  | "google-chrome"
+  | "microsoft-edge";
 
 export interface StoryEntry {
   id: string;

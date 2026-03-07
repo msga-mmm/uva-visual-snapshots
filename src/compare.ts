@@ -55,7 +55,9 @@ function buildStoryMetaMap(manifest: SnapshotManifest | null): Map<string, Story
 
 function parseSnapshotKey(key: string): SnapshotKeyMeta {
   const normalized = key.replace(/\\/g, "/");
-  const browserMatch = normalized.match(/^(chromium|firefox|webkit)\/(.+)$/);
+  const browserMatch = normalized.match(
+    /^(chromium|firefox|webkit|google-chrome|microsoft-edge)\/(.+)$/,
+  );
   if (browserMatch) {
     return {
       browser: browserMatch[1] as SnapshotKeyMeta["browser"],

@@ -17,8 +17,16 @@ function toNumber(value: string, label: string): number {
 
 function toBrowser(value: string): BrowserName {
   const normalized = value.toLowerCase();
-  if (normalized !== "chromium" && normalized !== "firefox" && normalized !== "webkit") {
-    throw new Error(`Invalid browser: ${value}. Expected chromium, firefox, or webkit.`);
+  if (
+    normalized !== "chromium" &&
+    normalized !== "firefox" &&
+    normalized !== "webkit" &&
+    normalized !== "google-chrome" &&
+    normalized !== "microsoft-edge"
+  ) {
+    throw new Error(
+      `Invalid browser: ${value}. Expected chromium, firefox, webkit, google-chrome, or microsoft-edge.`,
+    );
   }
   return normalized;
 }
@@ -86,7 +94,7 @@ async function main(): Promise<void> {
     .option("--baseline <dir>", "Baseline snapshots directory", ".uva-visual-snapshots/baseline")
     .option(
       "--browser <name>",
-      "Browser engine (repeat option for multiple): chromium, firefox, or webkit (Safari engine)",
+      "Browser engine (repeat option for multiple): chromium, firefox, webkit (Safari engine), google-chrome, or microsoft-edge",
       (value: string, previous: string[]) => [...previous, value],
       [],
     )
@@ -142,7 +150,7 @@ async function main(): Promise<void> {
     .option("--report <dir>", "Output report directory", ".uva-visual-snapshots/report")
     .option(
       "--browser <name>",
-      "Browser engine (repeat option for multiple): chromium, firefox, or webkit (Safari engine)",
+      "Browser engine (repeat option for multiple): chromium, firefox, webkit (Safari engine), google-chrome, or microsoft-edge",
       (value: string, previous: string[]) => [...previous, value],
       [],
     )

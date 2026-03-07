@@ -50,10 +50,18 @@ export const filters: ReportFilter[] = [
   },
 ];
 
-export const browserOrder: BrowserId[] = ["chromium", "firefox", "webkit"];
+export const browserOrder: BrowserId[] = [
+  "chromium",
+  "google-chrome",
+  "microsoft-edge",
+  "firefox",
+  "webkit",
+];
 
 export const browserLabel: Record<BrowserId, string> = {
   chromium: "Chromium",
+  "google-chrome": "Google Chrome",
+  "microsoft-edge": "Microsoft Edge",
   firefox: "Firefox",
   webkit: "WebKit",
 };
@@ -68,5 +76,12 @@ export const attentionStatuses = new Set<string>([
 export const browserPairs: BrowserPair[] = [
   { id: "cf", left: "chromium", right: "firefox" },
   { id: "cw", left: "chromium", right: "webkit" },
+  { id: "cg", left: "chromium", right: "google-chrome" },
+  { id: "ce", left: "chromium", right: "microsoft-edge" },
+  { id: "gf", left: "google-chrome", right: "firefox" },
+  { id: "gw", left: "google-chrome", right: "webkit" },
+  { id: "ge", left: "google-chrome", right: "microsoft-edge" },
+  { id: "ef", left: "microsoft-edge", right: "firefox" },
+  { id: "ew", left: "microsoft-edge", right: "webkit" },
   { id: "fw", left: "firefox", right: "webkit" },
 ];
