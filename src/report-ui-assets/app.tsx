@@ -1,3 +1,7 @@
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { SiFirefoxbrowser, SiGooglechrome, SiSafari } from "react-icons/si";
+
 const rootNode = document.getElementById("app");
 const dataEl = document.getElementById("report-data");
 const emptyReport = {
@@ -267,15 +271,12 @@ function renderBootstrapError(error) {
   rootNode.innerHTML =
     "<main style='font-family: system-ui, sans-serif; padding: 16px; line-height: 1.5'>" +
     "<h1 style='margin: 0 0 8px; font-size: 1.1rem'>Report UI failed to load</h1>" +
-    "<p style='margin: 0 0 8px'>React modules could not be loaded from CDN.</p>" +
+    "<p style='margin: 0 0 8px'>The bundled report UI could not be initialized.</p>" +
     "<p style='margin: 0'><code>" +
     message.replace(/</g, "&lt;") +
     "</code></p>" +
     "</main>";
 }
-
-let React;
-let createRoot;
 
 function App() {
   const [report, setReport] = React.useState(initialReport);
@@ -1075,26 +1076,14 @@ function App() {
   );
 }
 
-async function bootstrap() {
-  try {
-    const [reactMod, reactDomMod, iconsMod] = await Promise.all([
-      import("https://esm.sh/react@18.3.1"),
-      import("https://esm.sh/react-dom@18.3.1/client"),
-      import("https://esm.sh/react-icons@5.5.0/si?deps=react@18.3.1"),
-    ]);
-    React = reactMod.default || reactMod;
-    createRoot = reactDomMod.createRoot;
-    browserIconMap.set("chromium", iconsMod.SiGooglechrome || null);
-    browserIconMap.set("firefox", iconsMod.SiFirefoxbrowser || null);
-    browserIconMap.set("webkit", iconsMod.SiSafari || null);
-  } catch (error) {
-    renderBootstrapError(error);
-    return;
-  }
+browserIconMap.set("chromium", SiGooglechrome);
+browserIconMap.set("firefox", SiFirefoxbrowser);
+browserIconMap.set("webkit", SiSafari);
 
+try {
   if (rootNode) {
     createRoot(rootNode).render(<App />);
   }
+} catch (error) {
+  renderBootstrapError(error);
 }
-
-void bootstrap();

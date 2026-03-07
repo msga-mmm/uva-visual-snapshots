@@ -11,6 +11,9 @@
     <script id="report-data" type="application/json">
       __REPORT_DATA__
     </script>
-    <script type="module" src="./app.js"></script>
+    <script>
+      window.process = window.process || { env: { NODE_ENV: "production" } };
+    </script>
+    <script src="./app.js"></script>
   </body>
 </html>
