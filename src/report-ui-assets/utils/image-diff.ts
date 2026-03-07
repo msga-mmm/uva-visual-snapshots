@@ -1,11 +1,33 @@
 import { normalizeSrc } from "./report.js";
 import type { CrossPairDiff } from "../types.js";
 
-interface CompareResult {
-  status: "ready" | "dimension_mismatch" | "no_data";
+interface CompareResultBase {
   message: string;
   mismatchPixels: number | null;
   mismatchRatio: number | null;
+}
+
+interface CompareResult extends CompareResultBase {
+  status: "dimension_mismatch" | "no_data";
+}
+
+interface SimpleCompareResult extends CompareResultBase {
+  status: "ready" | "dimension_mismatch" | "no_data";
+}
+
+interface LoadedImageData {
+  src: string;
+  width: number;
+  height: number;
+  data: Uint8ClampedArray;
+}
+
+interface ReadyCompareResult extends CompareResultBase {
+  status: "ready";
+  mismatchPixels: number;
+  mismatchRatio: number;
+  left: LoadedImageData;
+  right: LoadedImageData;
 }
 
 async function loadImage(src: string | null | undefined): Promise<HTMLImageElement> {
@@ -17,76 +39,108 @@ async function loadImage(src: string | null | undefined): Promise<HTMLImageEleme
   });
 }
 
-export async function buildDiffOverlayBySrc(
+function getCanvasContext(width: number, height: number): CanvasRenderingContext2D {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Canvas is not available in this browser.");
+  }
+
+  return context;
+}
+
+async function loadImageData(src: string | null | undefined): Promise<LoadedImageData> {
+  const image = await loadImage(src);
+  const width = image.naturalWidth || image.width;
+  const height = image.naturalHeight || image.height;
+  const context = getCanvasContext(width, height);
+
+  context.drawImage(image, 0, 0);
+
+  return {
+    src: normalizeSrc(src),
+    width,
+    height,
+    data: context.getImageData(0, 0, width, height).data,
+  };
+}
+
+async function compareLoadedImages(
   leftSrc: string | null | undefined,
   rightSrc: string | null | undefined,
-): Promise<CrossPairDiff> {
+): Promise<CompareResult | ReadyCompareResult> {
   if (!leftSrc || !rightSrc) {
     return {
       status: "no_data",
       message: "missing snapshot",
       mismatchPixels: null,
       mismatchRatio: null,
-      leftSrc: normalizeSrc(leftSrc),
-      rightSrc: normalizeSrc(rightSrc),
-      overlaySrc: "",
     };
   }
 
-  const leftImage = await loadImage(leftSrc);
-  const rightImage = await loadImage(rightSrc);
-  const leftWidth = leftImage.naturalWidth || leftImage.width;
-  const leftHeight = leftImage.naturalHeight || leftImage.height;
-  const rightWidth = rightImage.naturalWidth || rightImage.width;
-  const rightHeight = rightImage.naturalHeight || rightImage.height;
-  if (leftWidth !== rightWidth || leftHeight !== rightHeight) {
+  const left = await loadImageData(leftSrc);
+  const right = await loadImageData(rightSrc);
+
+  if (left.width !== right.width || left.height !== right.height) {
     return {
       status: "dimension_mismatch",
-      message: `${leftWidth}x${leftHeight} vs ${rightWidth}x${rightHeight}`,
+      message: `${left.width}x${left.height} vs ${right.width}x${right.height}`,
       mismatchPixels: null,
       mismatchRatio: null,
+    };
+  }
+
+  let mismatchPixels = 0;
+  for (let i = 0; i < left.data.length; i += 4) {
+    if (
+      left.data[i] !== right.data[i] ||
+      left.data[i + 1] !== right.data[i + 1] ||
+      left.data[i + 2] !== right.data[i + 2] ||
+      left.data[i + 3] !== right.data[i + 3]
+    ) {
+      mismatchPixels += 1;
+    }
+  }
+
+  return {
+    status: "ready",
+    message: "",
+    mismatchPixels,
+    mismatchRatio: mismatchPixels / (left.width * left.height),
+    left,
+    right,
+  };
+}
+
+export async function buildDiffOverlayBySrc(
+  leftSrc: string | null | undefined,
+  rightSrc: string | null | undefined,
+): Promise<CrossPairDiff> {
+  const result = await compareLoadedImages(leftSrc, rightSrc);
+  if (result.status !== "ready") {
+    return {
+      status: result.status,
+      message: result.message,
+      mismatchPixels: result.mismatchPixels,
+      mismatchRatio: result.mismatchRatio,
       leftSrc: normalizeSrc(leftSrc),
       rightSrc: normalizeSrc(rightSrc),
       overlaySrc: "",
     };
   }
 
-  const width = leftWidth;
-  const height = leftHeight;
-  const leftCanvas = document.createElement("canvas");
-  leftCanvas.width = width;
-  leftCanvas.height = height;
-  const rightCanvas = document.createElement("canvas");
-  rightCanvas.width = width;
-  rightCanvas.height = height;
-  const leftCtx = leftCanvas.getContext("2d");
-  const rightCtx = rightCanvas.getContext("2d");
-  if (!leftCtx || !rightCtx) {
-    throw new Error("Canvas is not available in this browser.");
-  }
-  leftCtx.drawImage(leftImage, 0, 0);
-  rightCtx.drawImage(rightImage, 0, 0);
-  const leftData = leftCtx.getImageData(0, 0, width, height).data;
-  const rightData = rightCtx.getImageData(0, 0, width, height).data;
+  const overlayContext = getCanvasContext(result.left.width, result.left.height);
+  const overlay = overlayContext.createImageData(result.left.width, result.left.height);
 
-  const overlayCanvas = document.createElement("canvas");
-  overlayCanvas.width = width;
-  overlayCanvas.height = height;
-  const overlayCtx = overlayCanvas.getContext("2d");
-  if (!overlayCtx) {
-    throw new Error("Canvas is not available in this browser.");
-  }
-  const overlay = overlayCtx.createImageData(width, height);
-  let mismatchPixels = 0;
-
-  for (let i = 0; i < leftData.length; i += 4) {
+  for (let i = 0; i < result.left.data.length; i += 4) {
     if (
-      leftData[i] !== rightData[i] ||
-      leftData[i + 1] !== rightData[i + 1] ||
-      leftData[i + 2] !== rightData[i + 2] ||
-      leftData[i + 3] !== rightData[i + 3]
+      result.left.data[i] !== result.right.data[i] ||
+      result.left.data[i + 1] !== result.right.data[i + 1] ||
+      result.left.data[i + 2] !== result.right.data[i + 2] ||
+      result.left.data[i + 3] !== result.right.data[i + 3]
     ) {
-      mismatchPixels += 1;
       overlay.data[i] = 255;
       overlay.data[i + 1] = 0;
       overlay.data[i + 2] = 64;
@@ -98,80 +152,28 @@ export async function buildDiffOverlayBySrc(
       overlay.data[i + 3] = 82;
     }
   }
-  overlayCtx.putImageData(overlay, 0, 0);
+  overlayContext.putImageData(overlay, 0, 0);
 
   return {
     status: "ready",
     message: "",
-    mismatchPixels,
-    mismatchRatio: mismatchPixels / (width * height),
-    leftSrc: normalizeSrc(leftSrc),
-    rightSrc: normalizeSrc(rightSrc),
-    overlaySrc: overlayCanvas.toDataURL("image/png"),
+    mismatchPixels: result.mismatchPixels,
+    mismatchRatio: result.mismatchRatio,
+    leftSrc: result.left.src,
+    rightSrc: result.right.src,
+    overlaySrc: overlayContext.canvas.toDataURL("image/png"),
   };
 }
 
 export async function compareImagesBySrc(
   leftSrc: string | null | undefined,
   rightSrc: string | null | undefined,
-): Promise<CompareResult> {
-  if (!leftSrc || !rightSrc) {
-    return {
-      status: "no_data",
-      message: "missing snapshot",
-      mismatchPixels: null,
-      mismatchRatio: null,
-    };
-  }
-
-  const leftImage = await loadImage(leftSrc);
-  const rightImage = await loadImage(rightSrc);
-  const leftWidth = leftImage.naturalWidth || leftImage.width;
-  const leftHeight = leftImage.naturalHeight || leftImage.height;
-  const rightWidth = rightImage.naturalWidth || rightImage.width;
-  const rightHeight = rightImage.naturalHeight || rightImage.height;
-  if (leftWidth !== rightWidth || leftHeight !== rightHeight) {
-    return {
-      status: "dimension_mismatch",
-      message: `${leftWidth}x${leftHeight} vs ${rightWidth}x${rightHeight}`,
-      mismatchPixels: null,
-      mismatchRatio: null,
-    };
-  }
-
-  const width = leftWidth;
-  const height = leftHeight;
-  const leftCanvas = document.createElement("canvas");
-  leftCanvas.width = width;
-  leftCanvas.height = height;
-  const rightCanvas = document.createElement("canvas");
-  rightCanvas.width = width;
-  rightCanvas.height = height;
-  const leftCtx = leftCanvas.getContext("2d");
-  const rightCtx = rightCanvas.getContext("2d");
-  if (!leftCtx || !rightCtx) {
-    throw new Error("Canvas is not available in this browser.");
-  }
-  leftCtx.drawImage(leftImage, 0, 0);
-  rightCtx.drawImage(rightImage, 0, 0);
-  const leftData = leftCtx.getImageData(0, 0, width, height).data;
-  const rightData = rightCtx.getImageData(0, 0, width, height).data;
-
-  let mismatchPixels = 0;
-  for (let i = 0; i < leftData.length; i += 4) {
-    if (
-      leftData[i] !== rightData[i] ||
-      leftData[i + 1] !== rightData[i + 1] ||
-      leftData[i + 2] !== rightData[i + 2] ||
-      leftData[i + 3] !== rightData[i + 3]
-    ) {
-      mismatchPixels += 1;
-    }
-  }
+): Promise<SimpleCompareResult> {
+  const result = await compareLoadedImages(leftSrc, rightSrc);
   return {
-    status: "ready",
-    message: "",
-    mismatchPixels,
-    mismatchRatio: mismatchPixels / (width * height),
+    status: result.status,
+    message: result.message,
+    mismatchPixels: result.mismatchPixels,
+    mismatchRatio: result.mismatchRatio,
   };
 }
