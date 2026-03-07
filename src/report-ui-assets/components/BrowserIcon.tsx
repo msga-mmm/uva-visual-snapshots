@@ -1,4 +1,5 @@
 import React from "react";
+import "./BrowserIcon.css";
 import { SiFirefoxbrowser, SiGooglechrome, SiSafari } from "react-icons/si";
 
 const browserIconMap = new Map([

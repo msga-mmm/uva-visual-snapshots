@@ -1,4 +1,6 @@
 import React from "react";
+import "./styles/app.css";
+import "./styles/controls.css";
 import Sidebar from "./components/Sidebar";
 import BaselineCurrentView from "./components/BaselineCurrentView";
 import CrossBrowserView from "./components/CrossBrowserView";

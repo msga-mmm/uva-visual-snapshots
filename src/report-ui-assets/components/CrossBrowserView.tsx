@@ -1,4 +1,5 @@
 import React from "react";
+import "./CrossBrowserView.css";
 import { browserPairs, browserLabel } from "../constants";
 import { fmtPercent, pairLabelText } from "../utils/report";
 import { BrowserIcon } from "./BrowserIcon";

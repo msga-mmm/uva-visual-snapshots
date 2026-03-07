@@ -1,4 +1,5 @@
 import React from "react";
+import "./BaselineCurrentView.css";
 import { normalizeSrc } from "../utils/report";
 
 export default function BaselineCurrentView({

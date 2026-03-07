@@ -1,4 +1,5 @@
 import React from "react";
+import "./Sidebar.css";
 import { browserLabel, filters } from "../constants";
 import { fmtPercent } from "../utils/report";
 import { BrowserChipContent } from "./BrowserIcon";
