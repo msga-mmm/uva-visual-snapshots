@@ -50,7 +50,7 @@ if [[ -z "$RAW_BROWSERS" ]]; then
   if [[ -n "$BROWSER" ]]; then
     RAW_BROWSERS="$BROWSER"
   else
-    RAW_BROWSERS="chromium,firefox,webkit"
+    RAW_BROWSERS="chromium,google-chrome,microsoft-edge,firefox,webkit"
   fi
 fi
 

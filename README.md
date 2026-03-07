@@ -17,7 +17,7 @@ The report UI is read-only: it does not mutate snapshots from the browser.
 
 ```bash
 npm install
-npx playwright install chromium firefox webkit
+npx playwright install chromium firefox webkit chrome msedge
 npm run build
 ```
 
@@ -46,6 +46,8 @@ uva-visual-snapshots baseline \
   --current .uva-visual-snapshots/current \
   --baseline .uva-visual-snapshots/baseline \
   --browser chromium \
+  --browser google-chrome \
+  --browser microsoft-edge \
   --browser firefox \
   --browser webkit \
   --width 1280 \
@@ -66,6 +68,8 @@ uva-visual-snapshots report \
   --baseline .uva-visual-snapshots/baseline \
   --report .uva-visual-snapshots/report \
   --browser chromium \
+  --browser google-chrome \
+  --browser microsoft-edge \
   --browser firefox \
   --browser webkit \
   --width 1280 \
@@ -78,7 +82,7 @@ uva-visual-snapshots report \
   --port 4400
 ```
 
-`--browser` supports `chromium` (default), `google-chrome`, `microsoft-edge`, `firefox`, and `webkit` (Safari engine). `google-chrome` and `microsoft-edge` use the Chromium Playwright engine but keep separate output directories and report labels. Repeat `--browser` to capture multiple browsers in one run. When multiple browsers are provided, snapshots are written under browser subdirectories (for example `current/chromium/...`).
+`--browser` supports `chromium` (default), `google-chrome`, `microsoft-edge`, `firefox`, and `webkit` (Safari engine). `google-chrome` launches Playwright Chromium with channel `chrome`, and `microsoft-edge` launches channel `msedge`, so they use the real branded browsers when installed. Repeat `--browser` to capture multiple browsers in one run. When multiple browsers are provided, snapshots are written under browser subdirectories (for example `current/chromium/...`).
 
 Viewport is resolved per story from Storybook viewport metadata when available (for example `parameters.viewport.defaultViewport` / globals). Snapshots are grouped under viewport subdirectories (for example `current/chromium/mobile/...`) so cross-browser comparisons match the same story+viewport.
 
@@ -106,7 +110,7 @@ Workflow file: `.github/workflows/branch-visual-diff.yml`
 
 - Baseline snapshots are captured from one branch (`baseline_branch`, default: `main`)
 - Report/diff snapshots are captured from another branch (`report_branch`, default: current runner branch)
-- Chromium, Firefox, and WebKit are captured in a single workflow job and merged into one report
+- Chromium, Google Chrome, Microsoft Edge, Firefox, and WebKit are captured in a single workflow job and merged into one report
 - The generated report is uploaded as a workflow artifact: `visual-diff-report`
 - The report UI includes browser chips/tabs to switch between browser-specific results
 - Capture orchestration is centralized in `scripts/ci-capture.sh` to keep workflow YAML minimal.

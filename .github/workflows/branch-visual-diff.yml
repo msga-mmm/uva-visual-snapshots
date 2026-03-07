@@ -86,7 +86,7 @@ jobs:
 
       - name: Install Playwright browsers
         working-directory: report-src
-        run: npx playwright install --with-deps chromium firefox webkit
+        run: npx playwright install --with-deps chromium firefox webkit chrome msedge
 
       - name: Install report branch test Storybook dependencies
         working-directory: report-src/test-storybook
