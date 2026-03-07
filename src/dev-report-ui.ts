@@ -1,8 +1,7 @@
 import express from "express";
 import { promises as fs } from "node:fs";
-import { watch } from "node:fs";
 import path from "node:path";
-import ts from "typescript";
+import { createServer as createViteServer } from "vite";
 
 interface Args {
   port: number;
@@ -55,58 +54,63 @@ async function readReportJson(reportDir: string): Promise<Record<string, unknown
   }
 }
 
-async function transpileAppTsx(assetsDir: string): Promise<string> {
-  const inputPath = path.join(assetsDir, "app.tsx");
-  const source = await fs.readFile(inputPath, "utf8");
-  const result = ts.transpileModule(source, {
-    compilerOptions: {
-      target: ts.ScriptTarget.ES2022,
-      module: ts.ModuleKind.ESNext,
-      jsx: ts.JsxEmit.React,
-      sourceMap: false,
-      removeComments: false,
-    },
-    fileName: "app.tsx",
-  });
-  return result.outputText;
-}
-
-function bumpVersion(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const app = express();
   const assetsDir = path.resolve("src/report-ui-assets");
+  const projectRoot = path.resolve(".");
   const reportDir = path.resolve(args.reportDir);
-  let version = bumpVersion();
   await fs.mkdir(reportDir, { recursive: true });
 
-  app.get("/app.js", async (_req, res) => {
-    try {
-      const output = await transpileAppTsx(assetsDir);
-      res.type("application/javascript");
-      res.set("Cache-Control", "no-store");
-      res.send(output);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      res
-        .status(500)
-        .type("application/javascript")
-        .send(`throw new Error(${JSON.stringify(message)});`);
-    }
+  const vite = await createViteServer({
+    configFile: false,
+    envFile: false,
+    root: projectRoot,
+    publicDir: false,
+    server: {
+      middlewareMode: true,
+    },
   });
-
-  app.use(express.static(assetsDir));
 
   app.get("/report-data.json", async (_req, res) => {
     const report = await readReportJson(reportDir);
     res.json(report);
   });
 
-  app.get("/__dev/version", (_req, res) => {
-    res.json({ version });
+  app.use(vite.middlewares);
+
+  app.get("/", async (req, res, next) => {
+    try {
+      const report = await readReportJson(reportDir);
+      const embedded = JSON.stringify(report).replace(/</g, "\\u003c");
+      const html = await vite.transformIndexHtml(
+        req.originalUrl,
+        [
+          "<!doctype html>",
+          "<html lang=\"en\">",
+          "  <head>",
+          "    <meta charset=\"utf-8\" />",
+          "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />",
+          "    <title>UVA Visual Snapshots Report</title>",
+          "  </head>",
+          "  <body>",
+          "    <div id=\"app\"></div>",
+          "    <script id=\"report-data\" type=\"application/json\">",
+          `      ${embedded}`,
+          "    </script>",
+          "    <script>",
+          "      window.process = window.process || { env: { NODE_ENV: \"development\" } };",
+          "    </script>",
+          "    <script type=\"module\" src=\"/src/report-ui-assets/main.tsx\"></script>",
+          "  </body>",
+          "</html>",
+        ].join("\n"),
+      );
+      res.status(200).type("text/html").send(html);
+    } catch (error) {
+      vite.ssrFixStacktrace(error as Error);
+      next(error);
+    }
   });
 
   await new Promise<void>((resolve, reject) => {
@@ -117,14 +121,6 @@ async function main(): Promise<void> {
       resolve();
     });
     server.on("error", reject);
-  });
-
-  watch(assetsDir, () => {
-    version = bumpVersion();
-  });
-
-  watch(reportDir, () => {
-    version = bumpVersion();
   });
 }
 

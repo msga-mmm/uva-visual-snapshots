@@ -2,11 +2,10 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ensureDir } from "./fs-utils.js";
+import { bundleReportUiAssets } from "./report-ui-vite.js";
 import type { CompareReportData, DiffStatus } from "./types.js";
 
 const REPORT_DATA_PLACEHOLDER = "__REPORT_DATA__";
-const STYLES_LINK_TAG = '<link rel="stylesheet" href="./styles.css" />';
-const APP_MODULE_TAG = '<script type="module" src="./app.js"></script>';
 
 function statusLabel(status: DiffStatus): string {
   switch (status) {
@@ -52,79 +51,34 @@ async function resolveAssetsDir(): Promise<string> {
   throw new Error("Report UI assets not found. Expected report-ui-assets next to runtime module.");
 }
 
-function renderIndexHtml(
-  template: string,
-  reportData: CompareReportData,
-  stylesCss: string,
-  appJs: string,
-): string {
+function renderIndexHtml(template: string, reportData: CompareReportData): string {
   const embedded = JSON.stringify(reportData).replace(/</g, "\\u003c");
-  const escapedAppJs = appJs.replace(/<\/script/gi, "<\\/script");
 
   if (!template.includes(REPORT_DATA_PLACEHOLDER)) {
     throw new Error(`Report template is missing placeholder: ${REPORT_DATA_PLACEHOLDER}`);
   }
 
-  if (!template.includes(STYLES_LINK_TAG)) {
-    throw new Error(`Report template is missing styles link tag: ${STYLES_LINK_TAG}`);
-  }
-
-  if (!template.includes(APP_MODULE_TAG)) {
-    throw new Error(`Report template is missing app script tag: ${APP_MODULE_TAG}`);
-  }
-
-  return template
-    .replace(STYLES_LINK_TAG, `<style>\n${stylesCss}\n</style>`)
-    .replace(REPORT_DATA_PLACEHOLDER, embedded)
-    .replace(APP_MODULE_TAG, `<script>\n${escapedAppJs}\n</script>`);
+  return template.replace(REPORT_DATA_PLACEHOLDER, embedded);
 }
 
-async function readAppJsOrTranspile(assetsDir: string): Promise<string> {
+async function readUiAssetsOrBundle(assetsDir: string): Promise<{ appJs: string; stylesCss: string }> {
   const appJsPath = path.join(assetsDir, "app.js");
-  if (await pathExists(appJsPath)) {
-    return fs.readFile(appJsPath, "utf8");
+  const stylesCssPath = path.join(assetsDir, "styles.css");
+  if ((await pathExists(appJsPath)) && (await pathExists(stylesCssPath))) {
+    const [appJs, stylesCss] = await Promise.all([
+      fs.readFile(appJsPath, "utf8"),
+      fs.readFile(stylesCssPath, "utf8"),
+    ]);
+    return { appJs, stylesCss };
   }
 
-  const appTsxPath = path.join(assetsDir, "app.tsx");
-  if (!(await pathExists(appTsxPath))) {
-    throw new Error(`Report UI app source not found at ${appTsxPath}`);
+  const mainTsxPath = path.join(assetsDir, "main.tsx");
+  if (!(await pathExists(mainTsxPath))) {
+    throw new Error(`Report UI entry source not found at ${mainTsxPath}`);
   }
 
-  let typescriptModule: unknown;
-  try {
-    typescriptModule = await import("typescript");
-  } catch {
-    throw new Error(
-      "app.js is missing and TypeScript transpiler is unavailable. Run `npm run build` to generate report UI assets.",
-    );
-  }
-
-  const ts = (typescriptModule as { default?: unknown }).default ?? typescriptModule;
-  const typedTs = ts as {
-    ScriptTarget: { ES2022: unknown };
-    ModuleKind: { ESNext: unknown };
-    JsxEmit: { React: unknown };
-    transpileModule: (
-      source: string,
-      options: { compilerOptions: Record<string, unknown>; fileName: string },
-    ) => {
-      outputText: string;
-    };
-  };
-
-  const source = await fs.readFile(appTsxPath, "utf8");
-  const result = typedTs.transpileModule(source, {
-    compilerOptions: {
-      target: typedTs.ScriptTarget.ES2022,
-      module: typedTs.ModuleKind.ESNext,
-      jsx: typedTs.JsxEmit.React,
-      sourceMap: false,
-      removeComments: false,
-    },
-    fileName: "app.tsx",
-  });
-
-  return result.outputText;
+  const projectRoot = path.resolve(assetsDir, "..", "..");
+  return bundleReportUiAssets(projectRoot);
 }
 
 export async function writeReportHtml(
@@ -136,11 +90,15 @@ export async function writeReportHtml(
   const assetsDir = await resolveAssetsDir();
   const templatePath = path.join(assetsDir, "index.html");
   const template = await fs.readFile(templatePath, "utf8");
-  const appJs = await readAppJsOrTranspile(assetsDir);
-  const stylesCss = await fs.readFile(path.join(assetsDir, "styles.css"), "utf8");
+  const { appJs, stylesCss } = await readUiAssetsOrBundle(assetsDir);
+
+  await Promise.all([
+    fs.writeFile(path.join(reportDir, "app.js"), appJs, "utf8"),
+    fs.writeFile(path.join(reportDir, "styles.css"), stylesCss, "utf8"),
+  ]);
 
   const htmlPath = path.join(reportDir, "index.html");
-  await fs.writeFile(htmlPath, renderIndexHtml(template, reportData, stylesCss, appJs), "utf8");
+  await fs.writeFile(htmlPath, renderIndexHtml(template, reportData), "utf8");
 }
 
 export { statusLabel };
