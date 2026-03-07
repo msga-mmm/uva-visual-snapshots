@@ -73,9 +73,13 @@ export async function bundleReportUiAssets(projectRoot: string): Promise<ReportU
   const result = await build(createReportUiBuildConfig(projectRoot, { write: false }));
   const outputs = flattenBundleOutputs(result);
 
-  const jsFile = outputs.find((file) => file.fileName === "app.js" && typeof file.code === "string");
+  const jsFile = outputs.find(
+    (file) => file.fileName === "app.js" && typeof file.code === "string",
+  );
   const cssFile = outputs.find(
-    (file) => file.fileName === "styles.css" && (typeof file.source === "string" || file.source instanceof Uint8Array),
+    (file) =>
+      file.fileName === "styles.css" &&
+      (typeof file.source === "string" || file.source instanceof Uint8Array),
   );
 
   if (!jsFile?.code) {

@@ -61,7 +61,9 @@ function renderIndexHtml(template: string, reportData: CompareReportData): strin
   return template.replace(REPORT_DATA_PLACEHOLDER, embedded);
 }
 
-async function readUiAssetsOrBundle(assetsDir: string): Promise<{ appJs: string; stylesCss: string }> {
+async function readUiAssetsOrBundle(
+  assetsDir: string,
+): Promise<{ appJs: string; stylesCss: string }> {
   const appJsPath = path.join(assetsDir, "app.js");
   const stylesCssPath = path.join(assetsDir, "styles.css");
   if ((await pathExists(appJsPath)) && (await pathExists(stylesCssPath))) {

@@ -1,7 +1,15 @@
-import { normalizeSrc } from "./report";
+import { normalizeSrc } from "./report.js";
+import type { CrossPairDiff } from "../types.js";
 
-async function loadImage(src) {
-  return await new Promise((resolve, reject) => {
+interface CompareResult {
+  status: "ready" | "dimension_mismatch" | "no_data";
+  message: string;
+  mismatchPixels: number | null;
+  mismatchRatio: number | null;
+}
+
+async function loadImage(src: string | null | undefined): Promise<HTMLImageElement> {
+  return await new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
     image.onerror = () => reject(new Error("Failed to load snapshot image."));
@@ -9,7 +17,10 @@ async function loadImage(src) {
   });
 }
 
-export async function buildDiffOverlayBySrc(leftSrc, rightSrc) {
+export async function buildDiffOverlayBySrc(
+  leftSrc: string | null | undefined,
+  rightSrc: string | null | undefined,
+): Promise<CrossPairDiff> {
   if (!leftSrc || !rightSrc) {
     return {
       status: "no_data",
@@ -100,9 +111,17 @@ export async function buildDiffOverlayBySrc(leftSrc, rightSrc) {
   };
 }
 
-export async function compareImagesBySrc(leftSrc, rightSrc) {
+export async function compareImagesBySrc(
+  leftSrc: string | null | undefined,
+  rightSrc: string | null | undefined,
+): Promise<CompareResult> {
   if (!leftSrc || !rightSrc) {
-    return { status: "no_data", message: "missing snapshot", mismatchPixels: null, mismatchRatio: null };
+    return {
+      status: "no_data",
+      message: "missing snapshot",
+      mismatchPixels: null,
+      mismatchRatio: null,
+    };
   }
 
   const leftImage = await loadImage(leftSrc);

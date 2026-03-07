@@ -24,7 +24,11 @@ export default function BaselineCurrentView({
           <h3>Baseline</h3>
           <div className="viewport">
             {selectedEntry?.baselineImage ? (
-              <img id="baseline-img" alt="Baseline snapshot" src={normalizeSrc(selectedEntry.baselineImage)} />
+              <img
+                id="baseline-img"
+                alt="Baseline snapshot"
+                src={normalizeSrc(selectedEntry.baselineImage)}
+              />
             ) : (
               <p className="empty" id="baseline-empty">
                 No baseline image for this entry.
@@ -37,7 +41,11 @@ export default function BaselineCurrentView({
           <h3>Current</h3>
           <div className="viewport">
             {selectedEntry?.currentImage ? (
-              <img id="current-img" alt="Current snapshot" src={normalizeSrc(selectedEntry.currentImage)} />
+              <img
+                id="current-img"
+                alt="Current snapshot"
+                src={normalizeSrc(selectedEntry.currentImage)}
+              />
             ) : (
               <p className="empty" id="current-empty">
                 No current image for this entry.
@@ -95,7 +103,9 @@ export default function BaselineCurrentView({
               {showDiff && diffPixelsSrc ? (
                 <img
                   id="diff-pixels-img"
-                  className={"layer" + (zapDiff ? (zapShowCurrent ? " zap-red" : " zap-green") : "")}
+                  className={
+                    "layer" + (zapDiff ? (zapShowCurrent ? " zap-red" : " zap-green") : "")
+                  }
                   alt=""
                   aria-hidden="true"
                   src={diffPixelsSrc}
@@ -113,7 +123,9 @@ export default function BaselineCurrentView({
             </div>
           ) : (
             <p className="empty" id="diff-empty">
-              {showDiff ? "No generated diff image for this entry." : "No baseline image for this entry."}
+              {showDiff
+                ? "No generated diff image for this entry."
+                : "No baseline image for this entry."}
             </p>
           )}
         </div>

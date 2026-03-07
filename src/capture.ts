@@ -124,7 +124,8 @@ async function resolveStoryViewportFromPage(
       return null;
     };
 
-    const preview = (window as Window & { __STORYBOOK_PREVIEW__?: unknown }).__STORYBOOK_PREVIEW__ as
+    const preview = (window as Window & { __STORYBOOK_PREVIEW__?: unknown })
+      .__STORYBOOK_PREVIEW__ as
       | {
           currentRender?: { story?: unknown };
           storyStoreValue?: { getStoryContext?: (story: unknown) => unknown };
@@ -166,7 +167,8 @@ async function resolveStoryViewportFromPage(
         }
       | undefined;
     const globalsViewport = typedContext?.globals?.viewport ?? storyObject?.globals?.viewport;
-    const viewportParameters = typedContext?.parameters?.viewport ?? storyObject?.parameters?.viewport;
+    const viewportParameters =
+      typedContext?.parameters?.viewport ?? storyObject?.parameters?.viewport;
     const options = viewportParameters?.options ?? viewportParameters?.viewports ?? {};
 
     const viewportKey =
@@ -257,7 +259,9 @@ async function captureOneStory(
   browserDirPrefix?: string,
 ): Promise<SnapshotRecord> {
   const storyFileName = `${sanitizeFilename(story.id)}.png`;
-  let resolvedFileName = browserDirPrefix ? path.posix.join(browserDirPrefix, storyFileName) : storyFileName;
+  let resolvedFileName = browserDirPrefix
+    ? path.posix.join(browserDirPrefix, storyFileName)
+    : storyFileName;
   let resolvedViewport: ResolvedViewport | null = null;
   const storyUrl = buildStorybookUrl(
     storybookUrl,
@@ -344,10 +348,7 @@ async function captureStoriesForBrowser(
   browserDirPrefix: string | undefined,
 ): Promise<SnapshotRecord[]> {
   const freezeAnimations = options.freezeAnimations ?? true;
-  const storyConcurrency = Math.min(
-    stories.length,
-    asPositiveInteger(options.storyConcurrency, 4),
-  );
+  const storyConcurrency = Math.min(stories.length, asPositiveInteger(options.storyConcurrency, 4));
   const browserTypeMap = { chromium, firefox, webkit };
   const browser = await browserTypeMap[browserName].launch({ headless: options.headless });
   const records: Array<SnapshotRecord | null> = Array.from({ length: stories.length }, () => null);

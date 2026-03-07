@@ -68,7 +68,9 @@ export default function App({ initialReport, hasInlineReport }) {
               {metaText}
             </span>
           </div>
-          {compareMode === "baseline_current" && selectedStory && selectedStory.browsers.length > 0 ? (
+          {compareMode === "baseline_current" &&
+          selectedStory &&
+          selectedStory.browsers.length > 0 ? (
             <div className="filters" id="story-browser-filters">
               {selectedStory.browsers.map((browser) => (
                 <button
