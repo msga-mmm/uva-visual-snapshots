@@ -1,0 +1,157 @@
+.images {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 10px;
+  min-height: 360px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 8px;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card .viewport {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  overflow: auto;
+  background: var(--panel-alt);
+}
+
+.card img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.diff {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.diff-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.diff-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.diff h3 {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.diff .viewport {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  overflow: auto;
+  background: var(--panel-alt);
+  min-height: 220px;
+}
+
+.diff-stage {
+  position: relative;
+  max-width: 100%;
+}
+
+.diff-stage img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.diff-stage .layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#diff-base-img {
+  position: relative;
+  z-index: 1;
+}
+
+#diff-pixels-img {
+  z-index: 2;
+}
+
+#diff-focus-mask-img {
+  z-index: 3;
+}
+
+#diff-pixels-img.zap-red {
+  filter: saturate(1.25) hue-rotate(0deg);
+}
+
+#diff-pixels-img.zap-green {
+  filter: saturate(1.25) hue-rotate(120deg);
+}
+
+#btn-toggle-diff[aria-pressed="false"] {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+
+#btn-focus-diff[aria-pressed="false"] {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+
+#btn-zap-diff[aria-pressed="false"] {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+
+.metrics {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 20px;
+  text-align: center;
+}
+
+@media (max-width: 980px) {
+  .images {
+    grid-template-columns: 1fr;
+  }
+}
