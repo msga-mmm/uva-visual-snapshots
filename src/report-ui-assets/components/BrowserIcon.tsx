@@ -1,22 +1,33 @@
 import React from "react";
 import "./BrowserIcon.css";
+import type { IconType } from "react-icons";
 import { SiFirefoxbrowser, SiGooglechrome, SiSafari } from "react-icons/si";
+import type { BrowserId, ReportEntry } from "../types.js";
 
-const browserIconMap = new Map([
-  ["chromium", SiGooglechrome],
-  ["firefox", SiFirefoxbrowser],
-  ["webkit", SiSafari],
-]);
+const browserIconMap: Record<BrowserId, IconType> = {
+  chromium: SiGooglechrome,
+  firefox: SiFirefoxbrowser,
+  webkit: SiSafari,
+};
 
-export function BrowserIcon({ browser }) {
-  const Icon = browserIconMap.get(browser);
+interface BrowserIconProps {
+  browser: BrowserId;
+}
+
+export function BrowserIcon({ browser }: BrowserIconProps) {
+  const Icon = browserIconMap[browser];
   if (!Icon) {
     return null;
   }
-  return <Icon className="browser-icon" aria-hidden="true" focusable="false" />;
+  return <Icon className="browser-icon" aria-hidden focusable="false" />;
 }
 
-export function BrowserChipContent({ entry, browser }) {
+interface BrowserChipContentProps {
+  entry: ReportEntry | null;
+  browser: BrowserId;
+}
+
+export function BrowserChipContent({ entry, browser }: BrowserChipContentProps) {
   return (
     <>
       <BrowserIcon browser={browser} />

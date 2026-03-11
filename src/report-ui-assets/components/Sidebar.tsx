@@ -1,8 +1,26 @@
 import React from "react";
 import "./Sidebar.css";
-import { browserLabel, filters } from "../constants";
-import { fmtPercent } from "../utils/report";
-import { BrowserChipContent } from "./BrowserIcon";
+import { browserLabel, filters } from "../constants.js";
+import { fmtPercent } from "../utils/report.js";
+import { BrowserChipContent } from "./BrowserIcon.js";
+import type {
+  CompareMode,
+  CrossStorySignal,
+  FilterId,
+  StoryGroup,
+} from "../types.js";
+
+interface SidebarProps {
+  compareMode: CompareMode;
+  setCompareMode: React.Dispatch<React.SetStateAction<CompareMode>>;
+  activeFilter: FilterId;
+  setActiveFilter: React.Dispatch<React.SetStateAction<FilterId>>;
+  visibleStories: StoryGroup[];
+  selectedStory: StoryGroup | null;
+  setSelectedStoryKey: React.Dispatch<React.SetStateAction<string | null>>;
+  crossStorySignals: Record<string, CrossStorySignal>;
+  summaryText: string;
+}
 
 export default function Sidebar({
   compareMode,
@@ -14,7 +32,7 @@ export default function Sidebar({
   setSelectedStoryKey,
   crossStorySignals,
   summaryText,
-}) {
+}: SidebarProps) {
   return (
     <aside className="sidebar">
       <h1>UVA Visual Snapshots Report</h1>
@@ -38,7 +56,7 @@ export default function Sidebar({
         </button>
       </div>
       <div className="filters" id="filters">
-        {filters.map((filter) => (
+        {filters.map((filter: (typeof filters)[number]) => (
           <button
             key={filter.id}
             type="button"
@@ -54,7 +72,7 @@ export default function Sidebar({
         {visibleStories.length === 0 ? (
           <p className="empty">No stories match this filter.</p>
         ) : (
-          visibleStories.map((story) => (
+          visibleStories.map((story: StoryGroup) => (
             <button
               key={story.storyKey}
               type="button"
@@ -100,7 +118,7 @@ export default function Sidebar({
                   : null}
               </span>
               <span className="browser-health-row">
-                {story.browserHealth.map((health) => (
+                {story.browserHealth.map((health: StoryGroup["browserHealth"][number]) => (
                   <span
                     key={health.browser}
                     className={

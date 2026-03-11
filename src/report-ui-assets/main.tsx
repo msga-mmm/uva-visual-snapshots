@@ -1,2 +1,2 @@
 import "./styles.css";
-import "./index.tsx";
+import "./index.js";

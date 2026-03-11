@@ -1,8 +1,20 @@
 import React from "react";
 import "./CrossBrowserView.css";
-import { browserPairs, browserLabel } from "../constants";
-import { fmtPercent, pairLabelText } from "../utils/report";
-import { BrowserIcon } from "./BrowserIcon";
+import { browserPairs, browserLabel } from "../constants.js";
+import { fmtPercent, pairLabelText } from "../utils/report.js";
+import { BrowserIcon } from "./BrowserIcon.js";
+import type { BrowserPair, CrossPairDiff } from "../types.js";
+
+interface CrossBrowserViewProps {
+  activeCrossPair: BrowserPair;
+  activeCrossDiff: CrossPairDiff | null;
+  activeCrossLeftSrc: string;
+  activeCrossRightSrc: string;
+  activeCrossPairId: string;
+  setActiveCrossPairId: React.Dispatch<React.SetStateAction<string>>;
+  crossPairDiffs: Partial<Record<string, CrossPairDiff>>;
+  crossPairDiffsLoading: boolean;
+}
 
 export default function CrossBrowserView({
   activeCrossPair,
@@ -13,7 +25,7 @@ export default function CrossBrowserView({
   setActiveCrossPairId,
   crossPairDiffs,
   crossPairDiffsLoading,
-}) {
+}: CrossBrowserViewProps) {
   return (
     <>
       <section className="images">
@@ -50,7 +62,7 @@ export default function CrossBrowserView({
         <div className="diff-head">
           <h3>Cross-browser Diff</h3>
           <div className="diff-controls">
-            {browserPairs.map((pair) => {
+            {browserPairs.map((pair: BrowserPair) => {
               const pairDiff = crossPairDiffs[pair.id];
               return (
                 <button

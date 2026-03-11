@@ -1,12 +1,18 @@
 import React from "react";
 import "./styles/app.css";
 import "./styles/controls.css";
-import Sidebar from "./components/Sidebar";
-import BaselineCurrentView from "./components/BaselineCurrentView";
-import CrossBrowserView from "./components/CrossBrowserView";
-import { useReportAppState } from "./hooks/useReportAppState";
+import Sidebar from "./components/Sidebar.js";
+import BaselineCurrentView from "./components/BaselineCurrentView.js";
+import CrossBrowserView from "./components/CrossBrowserView.js";
+import { useReportAppState } from "./hooks/useReportAppState.js";
+import type { ReportData } from "./types.js";
 
-export default function App({ initialReport, hasInlineReport }) {
+interface AppProps {
+  initialReport: ReportData;
+  hasInlineReport: boolean;
+}
+
+export default function App({ initialReport, hasInlineReport }: AppProps) {
   const state = useReportAppState({ initialReport, hasInlineReport });
   const {
     compareMode,
@@ -72,7 +78,7 @@ export default function App({ initialReport, hasInlineReport }) {
           selectedStory &&
           selectedStory.browsers.length > 0 ? (
             <div className="filters" id="story-browser-filters">
-              {selectedStory.browsers.map((browser) => (
+              {selectedStory.browsers.map((browser: keyof typeof browserLabel) => (
                 <button
                   key={browser}
                   type="button"

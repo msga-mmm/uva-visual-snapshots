@@ -1,6 +1,23 @@
 import React from "react";
 import "./BaselineCurrentView.css";
-import { normalizeSrc } from "../utils/report";
+import { normalizeSrc } from "../utils/report.js";
+import type { ReportEntry } from "../types.js";
+
+interface BaselineCurrentViewProps {
+  selectedEntry: ReportEntry | null;
+  metricsText: string;
+  diffReady: boolean;
+  diffBaseSrc: string;
+  diffPixelsSrc: string;
+  focusMaskSrc: string;
+  showDiff: boolean;
+  setShowDiff: React.Dispatch<React.SetStateAction<boolean>>;
+  focusDiff: boolean;
+  setFocusDiff: React.Dispatch<React.SetStateAction<boolean>>;
+  zapDiff: boolean;
+  setZapDiff: React.Dispatch<React.SetStateAction<boolean>>;
+  zapShowCurrent: boolean;
+}
 
 export default function BaselineCurrentView({
   selectedEntry,
@@ -16,7 +33,7 @@ export default function BaselineCurrentView({
   zapDiff,
   setZapDiff,
   zapShowCurrent,
-}) {
+}: BaselineCurrentViewProps) {
   return (
     <>
       <section className="images">
@@ -64,7 +81,7 @@ export default function BaselineCurrentView({
               className="btn btn-primary"
               type="button"
               aria-pressed={showDiff ? "true" : "false"}
-              onClick={() => setShowDiff((prev) => !prev)}
+              onClick={() => setShowDiff((prev: boolean) => !prev)}
             >
               Show Diff Pixels
             </button>
@@ -74,7 +91,7 @@ export default function BaselineCurrentView({
                 className="btn btn-primary"
                 type="button"
                 aria-pressed={focusDiff ? "true" : "false"}
-                onClick={() => setFocusDiff((prev) => !prev)}
+                onClick={() => setFocusDiff((prev: boolean) => !prev)}
               >
                 Focus Diff
               </button>
@@ -85,7 +102,7 @@ export default function BaselineCurrentView({
                 className="btn btn-primary"
                 type="button"
                 aria-pressed={zapDiff ? "true" : "false"}
-                onClick={() => setZapDiff((prev) => !prev)}
+                onClick={() => setZapDiff((prev: boolean) => !prev)}
               >
                 Zap
               </button>
