@@ -93,7 +93,7 @@ export default function CrossBrowserView({
             <div id="cross-diff-stage" className="diff-stage">
               <img
                 id="cross-diff-base-img"
-                alt={`${pairLabelText(activeCrossPair)} base image`}
+                alt={`${pairLabelText(activeCrossPair)} base`}
                 src={activeCrossDiff.leftSrc}
               />
               {activeCrossDiff.overlaySrc ? (
