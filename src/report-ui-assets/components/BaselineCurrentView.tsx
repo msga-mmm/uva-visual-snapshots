@@ -99,7 +99,7 @@ export default function BaselineCurrentView({
         <div className="viewport">
           {diffReady ? (
             <div id="diff-stage" className="diff-stage">
-              <img id="diff-base-img" alt="Baseline image in diff panel" src={diffBaseSrc} />
+              <img id="diff-base-img" alt="Baseline in diff panel" src={diffBaseSrc} />
               {showDiff && diffPixelsSrc ? (
                 <img
                   id="diff-pixels-img"

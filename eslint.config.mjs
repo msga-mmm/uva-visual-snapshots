@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import { defineConfig } from "eslint/config";
 import prettierConfig from "eslint-config-prettier";
+import jsxA11y from "eslint-plugin-jsx-a11y";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
@@ -19,7 +20,9 @@ export default defineConfig(
   },
   {
     files: ["src/report-ui-assets/**/*.{js,ts,tsx}"],
+    ...jsxA11y.flatConfigs.recommended,
     languageOptions: {
+      ...jsxA11y.flatConfigs.recommended.languageOptions,
       globals: globals.browser,
     },
   },
