@@ -1,0 +1,36 @@
+{
+  "name": "uva-visual-snapshots",
+  "version": "0.1.0",
+  "description": "npm package for Storybook visual snapshots, baseline comparison, and a simple diff UI.",
+  "type": "module",
+  "bin": {
+    "uva-visual-snapshots": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rimraf dist && tsc -p tsconfig.json && mkdir -p dist/report-ui-assets && cp -R ../report-ui/dist/. dist/report-ui-assets",
+    "clean": "rimraf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx src/cli.ts",
+    "baseline": "tsx src/cli.ts baseline",
+    "report": "tsx src/cli.ts report"
+  },
+  "keywords": [
+    "storybook",
+    "playwright",
+    "visual-regression",
+    "snapshot"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^14.0.3",
+    "express": "^5.2.1",
+    "pixelmatch": "^7.1.0",
+    "playwright": "^1.58.2",
+    "pngjs": "^7.0.0"
+  }
+}

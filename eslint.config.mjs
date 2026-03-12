@@ -7,19 +7,25 @@ import tseslint from "typescript-eslint";
 
 export default defineConfig(
   {
-    ignores: ["dist/**", "node_modules/**", "test-storybook/**", ".uva-visual-snapshots/**"],
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "test-storybook/**",
+      ".uva-visual-snapshots/**",
+      "packages/*/dist/**",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettierConfig,
   {
-    files: ["src/**/*.ts", "scripts/**/*.mjs"],
+    files: ["packages/reporter-cli/src/**/*.ts", "scripts/**/*.mjs"],
     languageOptions: {
       globals: globals.node,
     },
   },
   {
-    files: ["src/report-ui-assets/**/*.{js,ts,tsx}"],
+    files: ["packages/report-ui/**/*.{js,ts,tsx}"],
     ...jsxA11y.flatConfigs.recommended,
     languageOptions: {
       ...jsxA11y.flatConfigs.recommended.languageOptions,
