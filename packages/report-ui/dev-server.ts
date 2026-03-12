@@ -11,7 +11,7 @@ interface Args {
 
 function parseArgs(argv: string[]): Args {
   let port = 4173;
-  let reportDir = ".uva-visual-snapshots/report";
+  let reportDir = "";
 
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
@@ -56,10 +56,12 @@ async function readReportJson(reportDir: string): Promise<Record<string, unknown
 }
 
 async function main(): Promise<void> {
+  const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
   const args = parseArgs(process.argv.slice(2));
   const app = express();
-  const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
-  const reportDir = path.resolve(args.reportDir);
+  const reportDir = args.reportDir
+    ? path.resolve(args.reportDir)
+    : path.resolve(packageRoot, "..", "..", ".uva-visual-snapshots", "report");
   await fs.mkdir(reportDir, { recursive: true });
 
   const vite = await createViteServer({
