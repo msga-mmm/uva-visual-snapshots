@@ -17,24 +17,79 @@ The report UI is read-only: it does not mutate snapshots from the browser.
 
 ```bash
 npm install
+cd test-storybook && npm install
 npx playwright install chromium firefox webkit
 npm run build
 ```
 
 ## Quick start
 
-1. Generate baseline from Storybook:
+1. Start the local fixture Storybook in a separate terminal:
+
+```bash
+cd test-storybook
+npm run storybook
+```
+
+Storybook starts at `http://localhost:6006`.
+
+2. Generate baseline from Storybook:
 
 ```bash
 npm run baseline -- --storybook-url http://localhost:6006
 ```
 
-2. Generate and serve report:
+3. Generate and serve report:
 
 ```bash
 npm run report -- --storybook-url http://localhost:6006
 # open http://localhost:4400
 ```
+
+## Local development
+
+Use the fixture app in `test-storybook/` when developing or testing snapshot capture locally.
+For React UI hot reload, run the report UI through Vite instead of serving the generated static report.
+
+1. Install dependencies:
+
+```bash
+npm install
+cd test-storybook && npm install
+```
+
+2. Start Storybook:
+
+```bash
+cd test-storybook
+npm run storybook
+```
+
+3. In the repo root, create or refresh the snapshot/report data:
+
+```bash
+npm run baseline -- --storybook-url http://localhost:6006
+npm run report -- --storybook-url http://localhost:6006 --no-serve
+```
+
+To run only for Chromium, add `--browser chromium`:
+
+```bash
+npm run baseline -- --storybook-url http://localhost:6006 --browser chromium
+npm run report -- --storybook-url http://localhost:6006 --browser chromium --no-serve
+```
+
+Chromium is also the default when `--browser` is omitted.
+
+4. Start the React report UI dev server with hot reload:
+
+```bash
+npm run dev:report-ui
+```
+
+Open `http://localhost:4173`.
+
+`npm run report` without `--no-serve` serves the generated static report on port `4400`, which does not support hot reload.
 
 ## CLI options
 

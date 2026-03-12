@@ -22,6 +22,23 @@ if [[ -z "$MODE" || -z "$STORYBOOK_DIR" || -z "$TOOL_DIR" ]]; then
   exit 2
 fi
 
+resolve_cli_entry() {
+  if [[ -f "$TOOL_DIR/src/cli.ts" ]]; then
+    echo "src/cli.ts"
+    return 0
+  fi
+
+  if [[ -f "$TOOL_DIR/packages/reporter-cli/src/cli.ts" ]]; then
+    echo "packages/reporter-cli/src/cli.ts"
+    return 0
+  fi
+
+  echo "Unable to find CLI entrypoint in $TOOL_DIR" >&2
+  return 1
+}
+
+CLI_ENTRY="$(resolve_cli_entry)"
+
 case "$MODE" in
   baseline)
     LOG_PATH="$RUNNER_TEMP/storybook-baseline.log"
@@ -99,7 +116,7 @@ if [[ "$MODE" == "baseline" ]]; then
   (
     cd "$TOOL_DIR"
     CMD=(
-      npx tsx src/cli.ts baseline
+      npx tsx "$CLI_ENTRY" baseline
       --storybook-url "$STORYBOOK_URL"
       --current "$CURRENT_DIR"
       --baseline "$BASELINE_DIR"
@@ -124,7 +141,7 @@ else
 
   REPORT_JSON_PATH="$REPORT_DIR/report.json"
   REPORT_CMD=(
-    npx tsx src/cli.ts report
+    npx tsx "$CLI_ENTRY" report
     --no-serve
     --storybook-url "$STORYBOOK_URL"
     --current "$CURRENT_DIR"
