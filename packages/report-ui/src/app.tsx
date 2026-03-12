@@ -1,19 +1,18 @@
 import React from "react";
 import "./styles/app.css";
 import "./styles/controls.css";
-import Sidebar from "./components/Sidebar.js";
-import BaselineCurrentView from "./components/BaselineCurrentView.js";
-import CrossBrowserView from "./components/CrossBrowserView.js";
-import { useReportAppState } from "./hooks/useReportAppState.js";
-import type { ReportData } from "./types.js";
+import Sidebar from "./components/Sidebar";
+import BaselineCurrentView from "./components/BaselineCurrentView";
+import CrossBrowserView from "./components/CrossBrowserView";
+import { useReportAppState } from "./hooks/useReportAppState";
+import type { ReportData } from "./types";
 
 interface AppProps {
   initialReport: ReportData;
-  hasInlineReport: boolean;
 }
 
-export default function App({ initialReport, hasInlineReport }: AppProps) {
-  const state = useReportAppState({ initialReport, hasInlineReport });
+export default function App({ initialReport }: AppProps) {
+  const state = useReportAppState({ initialReport });
   const {
     compareMode,
     setCompareMode,

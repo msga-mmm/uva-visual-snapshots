@@ -1,14 +1,14 @@
 import React from "react";
 import "./Sidebar.css";
-import { browserLabel, filters } from "../constants.js";
-import { fmtPercent } from "../utils/report.js";
-import { BrowserChipContent } from "./BrowserIcon.js";
+import { browserLabel, filters } from "../constants";
+import { fmtPercent } from "../utils/report";
+import { BrowserChipContent } from "./BrowserIcon";
 import type {
   CompareMode,
   CrossStorySignal,
   FilterId,
   StoryGroup,
-} from "../types.js";
+} from "../types";
 
 interface SidebarProps {
   compareMode: CompareMode;

@@ -1,4 +1,4 @@
-import type { BrowserId, BrowserPair, FilterId, ReportData, ReportStatus } from "./types.js";
+import type { BrowserId, BrowserPair, FilterId, ReportData, ReportStatus } from "./types";
 
 interface ReportFilter {
   id: FilterId;

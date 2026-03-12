@@ -3,7 +3,7 @@ import path from "node:path";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 import { ensureDir, fileExists, readJsonIfExists, toPosixPath, walkFiles } from "./fs-utils.js";
-import { writeReportHtml } from "./report-ui.js";
+import { copyReportUiAssets } from "./report-ui.js";
 import type {
   BrowserName,
   CompareEntry,
@@ -308,7 +308,7 @@ export async function compareSnapshots(options: CompareOptions): Promise<Compare
     JSON.stringify(reportData, null, 2),
     "utf8",
   );
-  await writeReportHtml(options.reportDir, reportData);
+  await copyReportUiAssets(options.reportDir);
 
   return reportData;
 }

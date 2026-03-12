@@ -1,44 +1,21 @@
 {
-  "name": "uva-visual-snapshots",
-  "version": "0.1.0",
-  "description": "npm package for Storybook visual snapshots, baseline comparison, and a simple diff UI.",
-  "type": "module",
-  "bin": {
-    "uva-visual-snapshots": "dist/cli.js"
-  },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md"
+  "name": "uva-visual-snapshots-workspace",
+  "private": true,
+  "workspaces": [
+    "packages/*"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && npm run build:assets",
-    "dev": "tsx src/cli.ts",
-    "dev:report-ui": "tsx src/dev-report-ui.ts",
-    "clean": "rimraf dist",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "npm run build -w @uva-visual-snapshots/report-ui && npm run build -w uva-visual-snapshots",
+    "dev": "npm run dev -w uva-visual-snapshots",
+    "dev:report-ui": "npm run dev -w @uva-visual-snapshots/report-ui",
+    "clean": "npm run clean -w uva-visual-snapshots && rimraf packages/report-ui/dist",
+    "typecheck": "npm run typecheck -w @uva-visual-snapshots/report-ui && npm run typecheck -w uva-visual-snapshots",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "baseline": "tsx src/cli.ts baseline",
-    "report": "tsx src/cli.ts report",
-    "build:assets": "rimraf dist/report-ui-assets && vite build --config vite.report-ui.config.ts && cp src/report-ui-assets/index.html dist/report-ui-assets/index.html"
-  },
-  "keywords": [
-    "storybook",
-    "playwright",
-    "visual-regression",
-    "snapshot"
-  ],
-  "license": "MIT",
-  "dependencies": {
-    "commander": "^14.0.3",
-    "express": "^5.2.1",
-    "pixelmatch": "^7.1.0",
-    "playwright": "^1.58.2",
-    "pngjs": "^7.0.0"
+    "baseline": "npm run baseline -w uva-visual-snapshots --",
+    "report": "npm run build -w @uva-visual-snapshots/report-ui && npm run report -w uva-visual-snapshots --"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

@@ -1,5 +1,5 @@
-import { browserLabel } from "../constants.js";
-import type { BrowserPair, ReportData, ReportEntry } from "../types.js";
+import { browserLabel } from "../constants";
+import type { BrowserPair, ReportData, ReportEntry } from "../types";
 
 export function readInlineReport(dataEl: HTMLElement | null): ReportData | null {
   try {

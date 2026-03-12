@@ -1,9 +1,9 @@
 import React from "react";
 import "./CrossBrowserView.css";
-import { browserPairs, browserLabel } from "../constants.js";
-import { fmtPercent, pairLabelText } from "../utils/report.js";
-import { BrowserIcon } from "./BrowserIcon.js";
-import type { BrowserPair, CrossPairDiff } from "../types.js";
+import { browserPairs, browserLabel } from "../constants";
+import { fmtPercent, pairLabelText } from "../utils/report";
+import { BrowserIcon } from "./BrowserIcon";
+import type { BrowserPair, CrossPairDiff } from "../types";
 
 interface CrossBrowserViewProps {
   activeCrossPair: BrowserPair;

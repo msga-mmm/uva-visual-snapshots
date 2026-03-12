@@ -7,9 +7,9 @@ import {
   emptyReport,
   filters,
   statusMap,
-} from "../constants.js";
-import { buildDiffOverlayBySrc, compareImagesBySrc } from "../utils/image-diff.js";
-import { entryLabel, fmtPercent, normalizeSrc, pairLabelText } from "../utils/report.js";
+} from "../constants";
+import { buildDiffOverlayBySrc, compareImagesBySrc } from "../utils/image-diff";
+import { entryLabel, fmtPercent, normalizeSrc, pairLabelText } from "../utils/report";
 import type {
   BrowserId,
   BrowserPair,
@@ -22,11 +22,10 @@ import type {
   StoryGroup,
   StoryStatus,
   StorySummary,
-} from "../types.js";
+} from "../types";
 
 interface UseReportAppStateOptions {
   initialReport: ReportData;
-  hasInlineReport: boolean;
 }
 
 type CrossPairDiffMap = Partial<Record<string, CrossPairDiff>>;
@@ -37,7 +36,7 @@ function isBrowserId(value: string): value is BrowserId {
   return browserOrder.includes(value as BrowserId);
 }
 
-export function useReportAppState({ initialReport, hasInlineReport }: UseReportAppStateOptions) {
+export function useReportAppState({ initialReport }: UseReportAppStateOptions) {
   const [report, setReport] = React.useState<ReportData>(initialReport);
   const [compareMode, setCompareMode] = React.useState<CompareMode>("baseline_current");
   const [activeFilter, setActiveFilter] = React.useState<FilterId>("all");
@@ -55,12 +54,8 @@ export function useReportAppState({ initialReport, hasInlineReport }: UseReportA
   const focusMaskCacheRef = React.useRef<FocusMaskCache>({});
 
   React.useEffect(() => {
-    if (hasInlineReport) {
-      return;
-    }
-
     let cancelled = false;
-    fetch("/report-data.json", { cache: "no-store" })
+    fetch("./report.json", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : emptyReport))
       .then((nextReport) => {
         if (!cancelled) {
@@ -76,7 +71,7 @@ export function useReportAppState({ initialReport, hasInlineReport }: UseReportA
     return () => {
       cancelled = true;
     };
-  }, [hasInlineReport]);
+  }, []);
 
   const allEntries = React.useMemo(
     (): ReportEntry[] => (Array.isArray(report.entries) ? report.entries : []),

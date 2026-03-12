@@ -1,6 +1,7 @@
 import express from "express";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createServer as createViteServer } from "vite";
 
 interface Args {
@@ -57,54 +58,32 @@ async function readReportJson(reportDir: string): Promise<Record<string, unknown
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const app = express();
-  const assetsDir = path.resolve("src/report-ui-assets");
-  const projectRoot = path.resolve(".");
+  const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
   const reportDir = path.resolve(args.reportDir);
   await fs.mkdir(reportDir, { recursive: true });
 
   const vite = await createViteServer({
-    configFile: false,
-    envFile: false,
-    root: projectRoot,
-    publicDir: false,
+    root: packageRoot,
     server: {
       middlewareMode: true,
     },
   });
 
-  app.get("/report-data.json", async (_req, res) => {
+  app.get("/report.json", async (_req, res) => {
     const report = await readReportJson(reportDir);
     res.json(report);
   });
 
+  app.use("/assets", express.static(path.join(reportDir, "assets")));
   app.use(vite.middlewares);
 
   app.get("/", async (req, res, next) => {
     try {
-      const report = await readReportJson(reportDir);
-      const embedded = JSON.stringify(report).replace(/</g, "\\u003c");
+      const templatePath = path.join(packageRoot, "index.html");
+      const template = await fs.readFile(templatePath, "utf8");
       const html = await vite.transformIndexHtml(
         req.originalUrl,
-        [
-          "<!doctype html>",
-          '<html lang="en">',
-          "  <head>",
-          '    <meta charset="utf-8" />',
-          '    <meta name="viewport" content="width=device-width, initial-scale=1" />',
-          "    <title>UVA Visual Snapshots Report</title>",
-          "  </head>",
-          "  <body>",
-          '    <div id="app"></div>',
-          '    <script id="report-data" type="application/json">',
-          `      ${embedded}`,
-          "    </script>",
-          "    <script>",
-          '      window.process = window.process || { env: { NODE_ENV: "development" } };',
-          "    </script>",
-          '    <script type="module" src="/src/report-ui-assets/main.tsx"></script>',
-          "  </body>",
-          "</html>",
-        ].join("\n"),
+        template,
       );
       res.status(200).type("text/html").send(html);
     } catch (error) {
@@ -115,7 +94,7 @@ async function main(): Promise<void> {
 
   await new Promise<void>((resolve, reject) => {
     const server = app.listen(args.port, () => {
-      console.log(`[report-ui-dev] Serving source UI from ${assetsDir}`);
+      console.log(`[report-ui-dev] Serving source UI from ${packageRoot}`);
       console.log(`[report-ui-dev] Reading report data from ${reportDir}/report.json`);
       console.log(`[report-ui-dev] Open http://localhost:${args.port}`);
       resolve();

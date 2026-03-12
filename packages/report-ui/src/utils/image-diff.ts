@@ -1,5 +1,5 @@
-import { normalizeSrc } from "./report.js";
-import type { CrossPairDiff } from "../types.js";
+import { normalizeSrc } from "./report";
+import type { CrossPairDiff } from "../types";
 
 interface CompareResultBase {
   message: string;

@@ -2,7 +2,7 @@ import React from "react";
 import "./BrowserIcon.css";
 import type { IconType } from "react-icons";
 import { SiFirefoxbrowser, SiGooglechrome, SiSafari } from "react-icons/si";
-import type { BrowserId, ReportEntry } from "../types.js";
+import type { BrowserId, ReportEntry } from "../types";
 
 const browserIconMap: Record<BrowserId, IconType> = {
   chromium: SiGooglechrome,

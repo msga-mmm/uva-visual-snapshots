@@ -1,13 +1,9 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import App from "./app.js";
-import { emptyReport } from "./constants.js";
-import { readInlineReport } from "./utils/report.js";
+import App from "./app";
+import { emptyReport } from "./constants";
 
 const rootNode = document.getElementById("app");
-const dataEl = document.getElementById("report-data");
-const inlineReport = readInlineReport(dataEl);
-const initialReport = inlineReport || emptyReport;
 
 function renderBootstrapError(error: unknown) {
   if (!rootNode) {
@@ -26,9 +22,7 @@ function renderBootstrapError(error: unknown) {
 
 try {
   if (rootNode) {
-    createRoot(rootNode).render(
-      <App initialReport={initialReport} hasInlineReport={Boolean(inlineReport)} />,
-    );
+    createRoot(rootNode).render(<App initialReport={emptyReport} />);
   }
 } catch (error) {
   renderBootstrapError(error);

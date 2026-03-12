@@ -1,7 +1,7 @@
 import React from "react";
 import "./BaselineCurrentView.css";
-import { normalizeSrc } from "../utils/report.js";
-import type { ReportEntry } from "../types.js";
+import { normalizeSrc } from "../utils/report";
+import type { ReportEntry } from "../types";
 
 interface BaselineCurrentViewProps {
   selectedEntry: ReportEntry | null;
