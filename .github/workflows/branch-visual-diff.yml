@@ -84,6 +84,10 @@ jobs:
         working-directory: report-src
         run: npm ci
 
+      - name: Build report UI assets
+        working-directory: report-src
+        run: npm run build -w @uva-visual-snapshots/report-ui
+
       - name: Install Playwright browsers
         working-directory: report-src
         run: npx playwright install --with-deps chromium firefox webkit
