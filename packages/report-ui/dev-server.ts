@@ -83,10 +83,7 @@ async function main(): Promise<void> {
     try {
       const templatePath = path.join(packageRoot, "index.html");
       const template = await fs.readFile(templatePath, "utf8");
-      const html = await vite.transformIndexHtml(
-        req.originalUrl,
-        template,
-      );
+      const html = await vite.transformIndexHtml(req.originalUrl, template);
       res.status(200).type("text/html").send(html);
     } catch (error) {
       vite.ssrFixStacktrace(error as Error);

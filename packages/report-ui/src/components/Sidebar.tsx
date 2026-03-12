@@ -3,12 +3,7 @@ import "./Sidebar.css";
 import { browserLabel, filters } from "../constants";
 import { fmtPercent } from "../utils/report";
 import { BrowserChipContent } from "./BrowserIcon";
-import type {
-  CompareMode,
-  CrossStorySignal,
-  FilterId,
-  StoryGroup,
-} from "../types";
+import type { CompareMode, CrossStorySignal, FilterId, StoryGroup } from "../types";
 
 interface SidebarProps {
   compareMode: CompareMode;

@@ -1,7 +1,4 @@
 {
   "files": [],
-  "references": [
-    { "path": "./packages/reporter-cli" },
-    { "path": "./packages/report-ui" }
-  ]
+  "references": [{ "path": "./packages/reporter-cli" }, { "path": "./packages/report-ui" }]
 }

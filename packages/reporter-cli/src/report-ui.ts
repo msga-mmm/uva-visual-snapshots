@@ -48,7 +48,9 @@ async function resolveAssetsDir(): Promise<string> {
     }
   }
 
-  throw new Error("Report UI assets not found. Build packages/report-ui before generating reports.");
+  throw new Error(
+    "Report UI assets not found. Build packages/report-ui before generating reports.",
+  );
 }
 
 export async function copyReportUiAssets(reportDir: string): Promise<void> {
