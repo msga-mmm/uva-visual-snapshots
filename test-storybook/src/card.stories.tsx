@@ -1,4 +1,5 @@
 import React from "react";
+import clsx from "clsx";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import "./styles.css";
 
@@ -10,7 +11,7 @@ type CardProps = {
 
 function Card({ title, body, highlighted }: CardProps): JSX.Element {
   return (
-    <article className={`card${highlighted ? " card-highlighted" : ""}`}>
+    <article className={clsx("card", highlighted && "card-highlighted")}>
       <h3>{title}</h3>
       <p>{body}</p>
     </article>

@@ -1,0 +1,45 @@
+.layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  min-height: 100vh;
+}
+
+.main {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.titleRow h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .titleRow {
+    align-items: flex-start;
+  }
+}

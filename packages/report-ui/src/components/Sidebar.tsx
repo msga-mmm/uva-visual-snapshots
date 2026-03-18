@@ -1,5 +1,7 @@
 import React from "react";
-import "./Sidebar.css";
+import clsx from "clsx";
+import controls from "../styles/controls.module.css";
+import styles from "./Sidebar.module.css";
 import { browserLabel, filters } from "../constants";
 import { fmtPercent } from "../utils/report";
 import { BrowserChipContent } from "./BrowserIcon";
@@ -28,34 +30,42 @@ export default function Sidebar({
   crossStorySignals,
   summaryText,
 }: SidebarProps) {
+  const crossPillStateStyles = {
+    diff: styles.diff,
+    same: styles.same,
+    size: styles.size,
+    loading: styles.loading,
+    na: styles.na,
+  } as const;
+
   return (
-    <aside className="sidebar">
+    <aside className={styles.sidebar}>
       <h1>UVA Visual Snapshots Report</h1>
-      <p className="summary" id="summary">
+      <p className={styles.summary} id="summary">
         {summaryText}
       </p>
-      <div className="filters" id="compare-mode">
+      <div className={styles.filters} id="compare-mode">
         <button
           type="button"
-          className={compareMode === "baseline_current" ? "filter active" : "filter"}
+          className={clsx(controls.filter, compareMode === "baseline_current" && controls.active)}
           onClick={() => setCompareMode("baseline_current")}
         >
           Baseline vs Current
         </button>
         <button
           type="button"
-          className={compareMode === "cross_browser" ? "filter active" : "filter"}
+          className={clsx(controls.filter, compareMode === "cross_browser" && controls.active)}
           onClick={() => setCompareMode("cross_browser")}
         >
           Cross-browser
         </button>
       </div>
-      <div className="filters" id="filters">
+      <div className={styles.filters} id="filters">
         {filters.map((filter: (typeof filters)[number]) => (
           <button
             key={filter.id}
             type="button"
-            className={filter.id === activeFilter ? "filter active" : "filter"}
+            className={clsx(controls.filter, filter.id === activeFilter && controls.active)}
             onClick={() => setActiveFilter(filter.id)}
             data-filter={filter.id}
           >
@@ -63,20 +73,23 @@ export default function Sidebar({
           </button>
         ))}
       </div>
-      <div id="list" className="list">
+      <div id="list" className={styles.list}>
         {visibleStories.length === 0 ? (
-          <p className="empty">No stories match this filter.</p>
+          <p className={styles.empty}>No stories match this filter.</p>
         ) : (
           visibleStories.map((story: StoryGroup) => (
             <button
               key={story.storyKey}
               type="button"
-              className={story.storyKey === selectedStory?.storyKey ? "item active" : "item"}
+              className={clsx(
+                styles.item,
+                story.storyKey === selectedStory?.storyKey && styles.active,
+              )}
               data-key={story.storyKey}
               onClick={() => setSelectedStoryKey(story.storyKey)}
             >
-              <span className="item-head">
-                <span className="name">{story.label}</span>
+              <span className={styles.itemHead}>
+                <span className={styles.name}>{story.label}</span>
                 {compareMode === "cross_browser"
                   ? (() => {
                       const signal = crossStorySignals[story.storyKey] || {
@@ -105,20 +118,21 @@ export default function Sidebar({
                                 ? "Computing cross-browser diff signal"
                                 : "Cross-browser diff not available";
                       return (
-                        <span className={`cross-pill ${signalState}`} title={signalTitle}>
+                        <span
+                          className={clsx(styles.crossPill, crossPillStateStyles[signalState])}
+                          title={signalTitle}
+                        >
                           {signalLabel}
                         </span>
                       );
                     })()
                   : null}
               </span>
-              <span className="browser-health-row">
+              <span className={styles.browserHealthRow}>
                 {story.browserHealth.map((health: StoryGroup["browserHealth"][number]) => (
                   <span
                     key={health.browser}
-                    className={
-                      health.hasCurrent ? "browser-health-chip" : "browser-health-chip muted"
-                    }
+                    className={clsx(styles.browserHealthChip, !health.hasCurrent && styles.muted)}
                     title={
                       (browserLabel[health.browser] || health.browser) +
                       " · " +
@@ -131,7 +145,7 @@ export default function Sidebar({
                   </span>
                 ))}
               </span>
-              <span className={story.status === "unchanged" ? "badge ok" : "badge"}>
+              <span className={clsx(styles.badge, story.status === "unchanged" && styles.ok)}>
                 {story.status}
               </span>
             </button>

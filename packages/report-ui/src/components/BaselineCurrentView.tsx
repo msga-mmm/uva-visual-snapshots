@@ -1,5 +1,7 @@
 import React from "react";
-import "./BaselineCurrentView.css";
+import clsx from "clsx";
+import controls from "../styles/controls.module.css";
+import styles from "./BaselineCurrentView.module.css";
 import { normalizeSrc } from "../utils/report";
 import type { ReportEntry } from "../types";
 
@@ -36,10 +38,10 @@ export default function BaselineCurrentView({
 }: BaselineCurrentViewProps) {
   return (
     <>
-      <section className="images">
-        <article className="card">
+      <section className={styles.images}>
+        <article className={styles.card}>
           <h3>Baseline</h3>
-          <div className="viewport">
+          <div className={styles.viewport}>
             {selectedEntry?.baselineImage ? (
               <img
                 id="baseline-img"
@@ -47,16 +49,16 @@ export default function BaselineCurrentView({
                 src={normalizeSrc(selectedEntry.baselineImage)}
               />
             ) : (
-              <p className="empty" id="baseline-empty">
+              <p className={styles.empty} id="baseline-empty">
                 No baseline image for this entry.
               </p>
             )}
           </div>
         </article>
 
-        <article className="card">
+        <article className={styles.card}>
           <h3>Current</h3>
-          <div className="viewport">
+          <div className={styles.viewport}>
             {selectedEntry?.currentImage ? (
               <img
                 id="current-img"
@@ -64,7 +66,7 @@ export default function BaselineCurrentView({
                 src={normalizeSrc(selectedEntry.currentImage)}
               />
             ) : (
-              <p className="empty" id="current-empty">
+              <p className={styles.empty} id="current-empty">
                 No current image for this entry.
               </p>
             )}
@@ -72,13 +74,13 @@ export default function BaselineCurrentView({
         </article>
       </section>
 
-      <section className="diff">
-        <div className="diff-head">
+      <section className={styles.diff}>
+        <div className={styles.diffHead}>
           <h3>Diff</h3>
-          <div className="diff-controls">
+          <div className={styles.diffControls}>
             <button
               id="btn-toggle-diff"
-              className="btn btn-primary"
+              className={clsx(controls.btn, controls.btnPrimary)}
               type="button"
               aria-pressed={showDiff ? "true" : "false"}
               onClick={() => setShowDiff((prev: boolean) => !prev)}
@@ -88,7 +90,7 @@ export default function BaselineCurrentView({
             {showDiff ? (
               <button
                 id="btn-focus-diff"
-                className="btn btn-primary"
+                className={clsx(controls.btn, controls.btnPrimary)}
                 type="button"
                 aria-pressed={focusDiff ? "true" : "false"}
                 onClick={() => setFocusDiff((prev: boolean) => !prev)}
@@ -99,7 +101,7 @@ export default function BaselineCurrentView({
             {showDiff ? (
               <button
                 id="btn-zap-diff"
-                className="btn btn-primary"
+                className={clsx(controls.btn, controls.btnPrimary)}
                 type="button"
                 aria-pressed={zapDiff ? "true" : "false"}
                 onClick={() => setZapDiff((prev: boolean) => !prev)}
@@ -110,19 +112,20 @@ export default function BaselineCurrentView({
           </div>
         </div>
 
-        <p className="metrics" id="metrics">
+        <p className={styles.metrics} id="metrics">
           {metricsText}
         </p>
-        <div className="viewport">
+        <div className={styles.viewport}>
           {diffReady ? (
-            <div id="diff-stage" className="diff-stage">
+            <div id="diff-stage" className={styles.diffStage}>
               <img id="diff-base-img" alt="Baseline in diff panel" src={diffBaseSrc} />
               {showDiff && diffPixelsSrc ? (
                 <img
                   id="diff-pixels-img"
-                  className={
-                    "layer" + (zapDiff ? (zapShowCurrent ? " zap-red" : " zap-green") : "")
-                  }
+                  className={clsx(
+                    styles.layer,
+                    zapDiff && (zapShowCurrent ? styles.zapRed : styles.zapGreen),
+                  )}
                   alt=""
                   aria-hidden="true"
                   src={diffPixelsSrc}
@@ -131,7 +134,7 @@ export default function BaselineCurrentView({
               {showDiff && focusDiff && focusMaskSrc ? (
                 <img
                   id="diff-focus-mask-img"
-                  className="layer"
+                  className={styles.layer}
                   alt=""
                   aria-hidden="true"
                   src={focusMaskSrc}
@@ -139,7 +142,7 @@ export default function BaselineCurrentView({
               ) : null}
             </div>
           ) : (
-            <p className="empty" id="diff-empty">
+            <p className={styles.empty} id="diff-empty">
               {showDiff
                 ? "No generated diff image for this entry."
                 : "No baseline image for this entry."}

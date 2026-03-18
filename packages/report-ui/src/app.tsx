@@ -1,6 +1,7 @@
 import React from "react";
-import "./styles/app.css";
-import "./styles/controls.css";
+import clsx from "clsx";
+import appStyles from "./styles/app.module.css";
+import controls from "./styles/controls.module.css";
 import Sidebar from "./components/Sidebar";
 import BaselineCurrentView from "./components/BaselineCurrentView";
 import CrossBrowserView from "./components/CrossBrowserView";
@@ -52,7 +53,7 @@ export default function App({ initialReport }: AppProps) {
   } = state;
 
   return (
-    <div className="layout">
+    <div className={appStyles.layout}>
       <Sidebar
         compareMode={compareMode}
         setCompareMode={setCompareMode}
@@ -65,23 +66,26 @@ export default function App({ initialReport }: AppProps) {
         summaryText={summaryText}
       />
 
-      <main className="main">
-        <div className="title-row">
+      <main className={appStyles.main}>
+        <div className={appStyles.titleRow}>
           <div>
             <h2 id="story-title">{selectedStory ? selectedStory.label : emptyTitle}</h2>
-            <span className="meta" id="story-meta">
+            <span className={appStyles.meta} id="story-meta">
               {metaText}
             </span>
           </div>
           {compareMode === "baseline_current" &&
           selectedStory &&
           selectedStory.browsers.length > 0 ? (
-            <div className="filters" id="story-browser-filters">
+            <div className={appStyles.filters} id="story-browser-filters">
               {selectedStory.browsers.map((browser: keyof typeof browserLabel) => (
                 <button
                   key={browser}
                   type="button"
-                  className={browser === activeStoryBrowser ? "filter active" : "filter"}
+                  className={clsx(
+                    controls.filter,
+                    browser === activeStoryBrowser && controls.active,
+                  )}
                   onClick={() => setActiveStoryBrowser(browser)}
                 >
                   {browserLabel[browser] || browser}
