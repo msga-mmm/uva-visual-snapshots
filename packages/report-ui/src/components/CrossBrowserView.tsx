@@ -1,5 +1,7 @@
 import React from "react";
-import "./CrossBrowserView.css";
+import clsx from "clsx";
+import controls from "../styles/controls.module.css";
+import styles from "./CrossBrowserView.module.css";
 import { browserPairs, browserLabel } from "../constants";
 import { fmtPercent, pairLabelText } from "../utils/report";
 import { BrowserIcon } from "./BrowserIcon";
@@ -28,60 +30,60 @@ export default function CrossBrowserView({
 }: CrossBrowserViewProps) {
   return (
     <>
-      <section className="images">
-        <article className="card">
+      <section className={styles.images}>
+        <article className={styles.card}>
           <h3>{browserLabel[activeCrossPair.left] || activeCrossPair.left}</h3>
-          <div className="viewport">
+          <div className={styles.viewport}>
             {activeCrossLeftSrc ? (
               <img
                 alt={`${browserLabel[activeCrossPair.left] || activeCrossPair.left} snapshot`}
                 src={activeCrossLeftSrc}
               />
             ) : (
-              <p className="empty">No current image for this browser.</p>
+              <p className={styles.empty}>No current image for this browser.</p>
             )}
           </div>
         </article>
 
-        <article className="card">
+        <article className={styles.card}>
           <h3>{browserLabel[activeCrossPair.right] || activeCrossPair.right}</h3>
-          <div className="viewport">
+          <div className={styles.viewport}>
             {activeCrossRightSrc ? (
               <img
                 alt={`${browserLabel[activeCrossPair.right] || activeCrossPair.right} snapshot`}
                 src={activeCrossRightSrc}
               />
             ) : (
-              <p className="empty">No current image for this browser.</p>
+              <p className={styles.empty}>No current image for this browser.</p>
             )}
           </div>
         </article>
       </section>
 
-      <section className="diff">
-        <div className="diff-head">
+      <section className={styles.diff}>
+        <div className={styles.diffHead}>
           <h3>Cross-browser Diff</h3>
-          <div className="diff-controls">
+          <div className={styles.diffControls}>
             {browserPairs.map((pair: BrowserPair) => {
               const pairDiff = crossPairDiffs[pair.id];
               return (
                 <button
                   key={pair.id}
                   type="button"
-                  className={
-                    pair.id === activeCrossPairId
-                      ? "filter active pair-filter"
-                      : "filter pair-filter"
-                  }
+                  className={clsx(
+                    controls.filter,
+                    styles.pairFilter,
+                    pair.id === activeCrossPairId && controls.active,
+                  )}
                   onClick={() => setActiveCrossPairId(pair.id)}
                 >
-                  <span className="pair-label">
+                  <span className={styles.pairLabel}>
                     <BrowserIcon browser={pair.left} />
-                    <span className="pair-sep">&harr;</span>
+                    <span className={styles.pairSep}>&harr;</span>
                     <BrowserIcon browser={pair.right} />
                   </span>
                   {pairDiff?.status === "ready" ? (
-                    <span className="pair-ratio">{fmtPercent(pairDiff.mismatchRatio)}</span>
+                    <span className={styles.pairRatio}>{fmtPercent(pairDiff.mismatchRatio)}</span>
                   ) : null}
                 </button>
               );
@@ -89,7 +91,7 @@ export default function CrossBrowserView({
           </div>
         </div>
 
-        <p className="metrics">
+        <p className={styles.metrics}>
           {crossPairDiffsLoading
             ? "Computing selected story cross-browser diffs..."
             : activeCrossDiff?.status === "ready"
@@ -100,9 +102,9 @@ export default function CrossBrowserView({
                 ? `${pairLabelText(activeCrossPair)} · size mismatch: ${activeCrossDiff.message || "n/a"}`
                 : `No comparable snapshots for ${pairLabelText(activeCrossPair)}.`}
         </p>
-        <div className="viewport">
+        <div className={styles.viewport}>
           {activeCrossDiff?.status === "ready" && activeCrossDiff.leftSrc ? (
-            <div id="cross-diff-stage" className="diff-stage">
+            <div id="cross-diff-stage" className={styles.diffStage}>
               <img
                 id="cross-diff-base-img"
                 alt={`${pairLabelText(activeCrossPair)} base`}
@@ -111,7 +113,7 @@ export default function CrossBrowserView({
               {activeCrossDiff.overlaySrc ? (
                 <img
                   id="cross-diff-overlay-img"
-                  className="layer"
+                  className={styles.layer}
                   alt=""
                   aria-hidden="true"
                   src={activeCrossDiff.overlaySrc}
@@ -119,7 +121,7 @@ export default function CrossBrowserView({
               ) : null}
             </div>
           ) : (
-            <p className="empty">No generated cross-browser diff image for this pair.</p>
+            <p className={styles.empty}>No generated cross-browser diff image for this pair.</p>
           )}
         </div>
       </section>

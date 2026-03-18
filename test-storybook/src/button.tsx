@@ -1,4 +1,5 @@
 import React, { type ButtonHTMLAttributes } from "react";
+import clsx from "clsx";
 
 export type ButtonVariant = "primary" | "secondary";
 
@@ -14,7 +15,7 @@ export function Button({
   ...buttonProps
 }: ButtonProps): JSX.Element {
   return (
-    <button className={`btn btn-${variant}`} disabled={disabled} {...buttonProps}>
+    <button className={clsx("btn", `btn-${variant}`)} disabled={disabled} {...buttonProps}>
       {label}
     </button>
   );

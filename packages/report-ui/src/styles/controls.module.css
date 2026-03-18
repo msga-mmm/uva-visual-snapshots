@@ -1,0 +1,52 @@
+.btn {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btnPrimary {
+  border-color: #8ad7de;
+  background: #ecfbfc;
+  color: var(--accent);
+}
+
+.btnOk {
+  border-color: #bbe3c0;
+  background: #effaf0;
+  color: var(--ok);
+}
+
+.btnWarn {
+  border-color: #f6d7c2;
+  background: #fff4eb;
+  color: var(--warn);
+}
+
+.filter {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text);
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.filter.active {
+  border-color: var(--accent);
+  background: #ecfbfc;
+  color: var(--accent);
+}

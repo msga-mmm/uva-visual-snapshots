@@ -1,4 +1,5 @@
 import React from "react";
+import clsx from "clsx";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useEffect, useRef, useState } from "react";
 import "./styles.css";
@@ -65,7 +66,7 @@ function ModalWithSpinner({ buttonLabel, title, spinnerLabel }: ModalWithSpinner
       </button>
 
       <div
-        className={`modal-overlay${isOpen ? " is-open" : ""}`}
+        className={clsx("modal-overlay", isOpen && "is-open")}
         aria-hidden={!isOpen}
         onClick={(event) => {
           if (event.target === event.currentTarget) {

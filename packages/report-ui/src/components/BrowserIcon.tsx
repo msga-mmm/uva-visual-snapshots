@@ -1,5 +1,5 @@
 import React from "react";
-import "./BrowserIcon.css";
+import styles from "./BrowserIcon.module.css";
 import type { IconType } from "react-icons";
 import { SiFirefoxbrowser, SiGooglechrome, SiSafari } from "react-icons/si";
 import type { BrowserId, ReportEntry } from "../types";
@@ -19,7 +19,7 @@ export function BrowserIcon({ browser }: BrowserIconProps) {
   if (!Icon) {
     return null;
   }
-  return <Icon className="browser-icon" aria-hidden focusable="false" />;
+  return <Icon className={styles.browserIcon} aria-hidden focusable="false" />;
 }
 
 interface BrowserChipContentProps {

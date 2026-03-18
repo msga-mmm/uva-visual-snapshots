@@ -1,4 +1,5 @@
 import React from "react";
+import clsx from "clsx";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import "./styles.css";
 
@@ -10,7 +11,7 @@ type SpinnerProps = {
 function Spinner({ label, size }: SpinnerProps): JSX.Element {
   return (
     <div className="spinner-wrapper">
-      <div className={`spinner spinner-${size}`} role="status" aria-label={label} />
+      <div className={clsx("spinner", `spinner-${size}`)} role="status" aria-label={label} />
       <p className="spinner-label">{label}</p>
     </div>
   );
