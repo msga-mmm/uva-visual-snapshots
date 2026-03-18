@@ -1,4 +1,4 @@
-name: "Visual Snapshots: test-storybook"
+name: "Visual Snapshots: report-ui"
 
 on:
   pull_request:
@@ -23,11 +23,11 @@ permissions:
 
 jobs:
   visual-snapshots:
-    name: "Visual Snapshots: test-storybook"
+    name: "Visual Snapshots: report-ui"
     uses: ./.github/workflows/reusable-visual-snapshots.yml
     with:
-      label: test-storybook
-      folder: test-storybook
+      label: report-ui
+      folder: packages/report-ui
       baseline_branch: ${{ github.event_name == 'pull_request' && github.base_ref || inputs.baseline_branch || 'main' }}
       report_branch: ${{ github.event_name == 'pull_request' && github.head_ref || inputs.report_branch || github.ref_name }}
       fail_on_changes: ${{ inputs.fail_on_changes || false }}

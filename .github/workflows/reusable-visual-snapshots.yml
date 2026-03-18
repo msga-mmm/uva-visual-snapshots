@@ -1,0 +1,353 @@
+name: Reusable Visual Snapshots
+
+on:
+  workflow_call:
+    inputs:
+      label:
+        required: true
+        type: string
+      folder:
+        required: true
+        type: string
+      baseline_branch:
+        required: false
+        type: string
+        default: main
+      report_branch:
+        required: false
+        type: string
+        default: ""
+      fail_on_changes:
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: visual-diff-${{ inputs.folder }}-${{ inputs.report_branch || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual-diff:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Resolve baseline/report refs
+        id: refs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASELINE_REF="${{ inputs.baseline_branch }}"
+          REPORT_REF="${{ inputs.report_branch }}"
+
+          if [[ -z "$BASELINE_REF" ]]; then
+            BASELINE_REF="main"
+          fi
+
+          if [[ -z "$REPORT_REF" ]]; then
+            REPORT_REF="${{ github.ref_name }}"
+          fi
+
+          echo "baseline_ref=$BASELINE_REF" >> "$GITHUB_OUTPUT"
+          echo "report_ref=$REPORT_REF" >> "$GITHUB_OUTPUT"
+          echo "Using baseline=$BASELINE_REF report=$REPORT_REF"
+
+      - name: Checkout report branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.refs.outputs.report_ref }}
+          path: report-src
+
+      - name: Checkout baseline branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.refs.outputs.baseline_ref }}
+          path: baseline-src
+
+      - name: Resolve target Storybook sources
+        id: storybook
+        shell: bash
+        env:
+          TARGET_FOLDER: ${{ inputs.folder }}
+        run: |
+          set -euo pipefail
+
+          has_storybook_script() {
+            local target_dir="$1"
+            local package_json="$target_dir/package.json"
+
+            if [[ ! -f "$package_json" ]]; then
+              return 1
+            fi
+
+            node -e '
+              const fs = require("node:fs");
+              const path = process.argv[1];
+              const pkg = JSON.parse(fs.readFileSync(path, "utf8"));
+              process.exit(pkg.scripts && pkg.scripts.storybook ? 0 : 1);
+            ' "$package_json"
+          }
+
+          BASELINE_STORYBOOK_DIR="baseline-src/${TARGET_FOLDER}"
+          REPORT_STORYBOOK_DIR="report-src/${TARGET_FOLDER}"
+          BASELINE_SOURCE_REF="${{ steps.refs.outputs.baseline_ref }}"
+
+          if ! has_storybook_script "$BASELINE_STORYBOOK_DIR"; then
+            echo "Baseline target does not define a storybook script. Falling back to report branch Storybook target."
+            BASELINE_STORYBOOK_DIR="$REPORT_STORYBOOK_DIR"
+            BASELINE_SOURCE_REF="${{ steps.refs.outputs.report_ref }}"
+          fi
+
+          if ! has_storybook_script "$REPORT_STORYBOOK_DIR"; then
+            echo "Report target does not define a storybook script in ${REPORT_STORYBOOK_DIR}." >&2
+            exit 1
+          fi
+
+          echo "baseline_storybook_dir=$BASELINE_STORYBOOK_DIR" >> "$GITHUB_OUTPUT"
+          echo "report_storybook_dir=$REPORT_STORYBOOK_DIR" >> "$GITHUB_OUTPUT"
+          echo "baseline_storybook_source_ref=$BASELINE_SOURCE_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "25"
+          cache: npm
+          cache-dependency-path: |
+            report-src/package-lock.json
+            baseline-src/package-lock.json
+            report-src/${{ inputs.folder }}/package-lock.json
+            baseline-src/${{ inputs.folder }}/package-lock.json
+
+      - name: Install report branch root dependencies
+        if: ${{ hashFiles('report-src/package-lock.json') != '' }}
+        working-directory: report-src
+        run: npm ci
+
+      - name: Install baseline branch root dependencies
+        if: ${{ hashFiles('baseline-src/package-lock.json') != '' }}
+        working-directory: baseline-src
+        run: npm ci
+
+      - name: Install report branch target dependencies
+        if: ${{ hashFiles(format('report-src/{0}/package-lock.json', inputs.folder)) != '' }}
+        working-directory: report-src/${{ inputs.folder }}
+        run: npm ci
+
+      - name: Install baseline branch target dependencies
+        if: ${{ hashFiles(format('baseline-src/{0}/package-lock.json', inputs.folder)) != '' }}
+        working-directory: baseline-src/${{ inputs.folder }}
+        run: npm ci
+
+      - name: Build report UI assets
+        if: ${{ hashFiles('report-src/packages/report-ui/package.json') != '' }}
+        working-directory: report-src
+        run: npm run build -w @uva-visual-snapshots/report-ui
+
+      - name: Install Playwright browsers
+        working-directory: report-src
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Capture baseline snapshots from baseline branch
+        shell: bash
+        env:
+          MODE: baseline
+          STORYBOOK_DIR: ${{ steps.storybook.outputs.baseline_storybook_dir }}
+          TOOL_DIR: report-src
+          BROWSERS: chromium,firefox,webkit
+          STORY_CONCURRENCY: 4
+          BROWSER_CONCURRENCY: 3
+        run: |
+          set -euo pipefail
+          CURRENT_DIR="$RUNNER_TEMP/current-baseline" \
+          BASELINE_DIR="$RUNNER_TEMP/baseline" \
+          bash report-src/scripts/ci-capture.sh
+
+      - name: Capture report snapshots from report branch
+        shell: bash
+        env:
+          MODE: report
+          STORYBOOK_DIR: ${{ steps.storybook.outputs.report_storybook_dir }}
+          TOOL_DIR: report-src
+          BROWSERS: chromium,firefox,webkit
+          STORY_CONCURRENCY: 4
+          BROWSER_CONCURRENCY: 3
+        run: |
+          set -euo pipefail
+          CURRENT_DIR="$RUNNER_TEMP/current-report" \
+          BASELINE_DIR="$RUNNER_TEMP/baseline" \
+          REPORT_DIR="$RUNNER_TEMP/report" \
+          bash report-src/scripts/ci-capture.sh
+
+      - name: Build report summary
+        id: summary
+        shell: bash
+        env:
+          BASELINE_REF: ${{ steps.refs.outputs.baseline_ref }}
+          BASELINE_STORYBOOK_SOURCE_REF: ${{ steps.storybook.outputs.baseline_storybook_source_ref }}
+          REPORT_REF: ${{ steps.refs.outputs.report_ref }}
+          TARGET_LABEL: ${{ inputs.label }}
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require("node:fs");
+          const report = JSON.parse(fs.readFileSync(`${process.env.RUNNER_TEMP}/report/report.json`, "utf8"));
+          const summary = report.summary ?? {};
+          const changed = Number(summary.changed ?? 0);
+          const output = process.env.GITHUB_OUTPUT;
+          const stepSummary = process.env.GITHUB_STEP_SUMMARY;
+          fs.appendFileSync(output, `changed=${changed}\n`);
+          fs.appendFileSync(
+            stepSummary,
+            [
+              `## Visual Diff Summary: ${process.env.TARGET_LABEL}`,
+              "",
+              `- Browsers: \`chromium, firefox, webkit\``,
+              `- Baseline branch: \`${process.env.BASELINE_REF}\``,
+              `- Baseline Storybook source: \`${process.env.BASELINE_STORYBOOK_SOURCE_REF}\``,
+              `- Report branch: \`${process.env.REPORT_REF}\``,
+              `- Total snapshots: \`${summary.total ?? 0}\``,
+              `- Changed: \`${summary.changed ?? 0}\``,
+              `- Unchanged: \`${summary.unchanged ?? 0}\``,
+              `- Missing baseline: \`${summary.missingBaseline ?? 0}\``,
+              `- Missing current: \`${summary.missingCurrent ?? 0}\``,
+              `- Dimension mismatch: \`${summary.dimensionMismatch ?? 0}\``,
+              `- Errors: \`${summary.errors ?? 0}\``,
+            ].join("\n") + "\n",
+          );
+          NODE
+
+      - name: Compute artifact metadata
+        id: meta
+        shell: bash
+        env:
+          TARGET_LABEL: ${{ inputs.label }}
+          TARGET_FOLDER: ${{ inputs.folder }}
+        run: |
+          set -euo pipefail
+          SLUG="$(printf '%s' "$TARGET_LABEL" | tr '[:upper:]' '[:lower:]' | tr -cs '[:alnum:]._/-' '-')"
+          FOLDER_SLUG="$(printf '%s' "$TARGET_FOLDER" | tr '[:upper:]' '[:lower:]' | tr -cs '[:alnum:]._/-' '-')"
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+          echo "folder_slug=$FOLDER_SLUG" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=visual-diff-report-$SLUG" >> "$GITHUB_OUTPUT"
+          echo "comment_marker=<!-- visual-diff-report-link:$SLUG -->" >> "$GITHUB_OUTPUT"
+
+      - name: Upload visual diff report artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.meta.outputs.artifact_name }}
+          path: ${{ runner.temp }}/report
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Prepare GitHub Pages content
+        id: pages
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+        shell: bash
+        env:
+          REPORT_SUBDIR: ${{ steps.meta.outputs.folder_slug }}
+          TARGET_LABEL: ${{ inputs.label }}
+        run: |
+          set -euo pipefail
+
+          BASE_PATH="visual-diffs/${REPORT_SUBDIR}"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            REPORT_SUBPATH="${BASE_PATH}/pr-${{ github.event.pull_request.number }}/run-${{ github.run_id }}"
+          else
+            SAFE_REF="$(echo "${{ steps.refs.outputs.report_ref }}" | tr -cs '[:alnum:]._-' '-')"
+            REPORT_SUBPATH="${BASE_PATH}/manual/${SAFE_REF}/run-${{ github.run_id }}"
+          fi
+
+          PUBLISH_ROOT="${RUNNER_TEMP}/pages"
+          DEST_DIR="${PUBLISH_ROOT}/${REPORT_SUBPATH}"
+          mkdir -p "$DEST_DIR"
+          cp -R "${RUNNER_TEMP}/report/." "$DEST_DIR/"
+
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          if [[ "$REPO_NAME" == "${OWNER}.github.io" ]]; then
+            BASE_URL="https://${OWNER}.github.io"
+          else
+            BASE_URL="https://${OWNER}.github.io/${REPO_NAME}"
+          fi
+          REPORT_URL="${BASE_URL}/${REPORT_SUBPATH}/index.html"
+
+          echo "report_subpath=${REPORT_SUBPATH}" >> "$GITHUB_OUTPUT"
+          echo "report_url=${REPORT_URL}" >> "$GITHUB_OUTPUT"
+
+          {
+            echo ""
+            echo "## Visual Diff Report: ${TARGET_LABEL}"
+            echo ""
+            echo "- Browsers: \`chromium, firefox, webkit\`"
+            echo "- Live report: ${REPORT_URL}"
+            echo "- Published path: \`${REPORT_SUBPATH}\`"
+            echo ""
+            echo "> GitHub Pages publish can take up to a minute after deploy."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy report to GitHub Pages
+        if: ${{ steps.pages.outputs.report_subpath != '' }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ${{ runner.temp }}/pages
+          keep_files: true
+          enable_jekyll: false
+
+      - name: Comment live report URL on pull request
+        if: ${{ github.event_name == 'pull_request' && steps.pages.outputs.report_url != '' }}
+        uses: actions/github-script@v8
+        env:
+          REPORT_URL: ${{ steps.pages.outputs.report_url }}
+          REPORT_SUBPATH: ${{ steps.pages.outputs.report_subpath }}
+          REPORT_LABEL: ${{ inputs.label }}
+          MARKER: ${{ steps.meta.outputs.comment_marker }}
+        with:
+          script: |
+            const marker = process.env.MARKER;
+            const body = [
+              marker,
+              `## Visual Diff Report: ${process.env.REPORT_LABEL}`,
+              "",
+              "- Browsers: `chromium, firefox, webkit`",
+              `- Live report: ${process.env.REPORT_URL}`,
+              `- Published path: \`${process.env.REPORT_SUBPATH}\``,
+              "",
+              "_GitHub Pages publish may take up to a minute after the workflow finishes._",
+            ].join("\n");
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find((comment) => comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Fail when changes detected
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.fail_on_changes && steps.summary.outputs.changed != '0' }}
+        run: |
+          echo "Snapshot changes detected for ${{ inputs.label }}: ${{ steps.summary.outputs.changed }}"
+          exit 1
