@@ -6,6 +6,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "tsx dev-server.ts",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "build-storybook": "storybook build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
